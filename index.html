@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gelir·Gider">
+<meta name="theme-color" content="#07070f">
+<title>Gelir·Gider – Bekir ATEŞ</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="app_icon_512.png">
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+<!-- MESH BG -->
+<div class="mesh-bg"></div>
+
+<!-- ═══════════════════ SPLASH ═══════════════════ -->
+<div id="splash">
+  <div class="splash-rings">
+    <div class="splash-ring splash-ring-1"></div>
+    <div class="splash-ring splash-ring-2"></div>
+    <div class="splash-ring splash-ring-3"></div>
+    <div class="splash-logo-inner" style="background:transparent; box-shadow:none; padding:0;">
+      <img src="app_icon_512.png" alt="Logo" style="width:100%; height:100%; object-fit:contain; border-radius:18px; box-shadow:var(--shadow-glow-green);">
+    </div>
+  </div>
+  <div class="splash-wordmark">
+    <div class="splash-title"><span class="g">Gelir</span>·Gider</div>
+    <div class="splash-sub">Bekir ATEŞ · Finansal Takip</div>
+  </div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<!-- ═══════════════════ APP ═══════════════════ -->
+<div id="app">
+
+<!-- ━━━━━━━━━━━━━━━ HOME ━━━━━━━━━━━━━━━ -->
+<div id="screen-home" class="screen">
+  <div class="page-header">
+    <div class="page-header-left" style="display:flex; align-items:center; gap:12px;">
+      <img src="app_icon_512.png" alt="Logo" style="width:44px; height:44px; border-radius:12px; object-fit:contain; box-shadow:var(--shadow-sm);">
+      <div>
+        <div class="greeting">Hoş Geldin 👋</div>
+        <div class="username">Gelir·Gider</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn income" onclick="openAddModal('income')" title="Gelir Ekle">
+        <i data-lucide="trending-up" style="stroke:#00d68f;stroke-width:2.5"></i>
+      </button>
+      <button class="icon-btn expense" onclick="openAddModal('expense')" title="Gider Ekle">
+        <i data-lucide="trending-down" style="stroke:#ff4d6d;stroke-width:2.5"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="scroll-area">
+    <!-- Period Tabs -->
+    <div class="period-tabs">
+      <button class="period-tab active" data-period="day">Bugün</button>
+      <button class="period-tab" data-period="week">Hafta</button>
+      <button class="period-tab" data-period="month">Ay</button>
+      <button class="period-tab" data-period="year">Yıl</button>
+    </div>
+
+    <!-- Fixed warnings -->
+    <div id="fixed-warnings"></div>
+
+    <!-- Balance Card -->
+    <div class="balance-card">
+      <div class="balance-eyebrow">Net Bakiye</div>
+      <div class="balance-amount positive" id="balance-amount">₺0,00</div>
+      
+      <!-- NEW V3: Budget Progress inside Balance Card -->
+      <div class="budget-wrap" id="budget-widget" style="display:none; margin-bottom:24px;">
+        <div class="budget-header">
+          <div>
+            <div class="budget-title">Aylık Bütçe Hedefi</div>
+            <div class="budget-sub" id="budget-desc">Harcanan: %0</div>
+          </div>
+          <div class="budget-amt" id="budget-rem">₺0 Kaldı</div>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="budget-bar" style="width:0%"></div></div>
+      </div>
+
+      <div class="balance-row">
+        <div class="balance-pill">
+          <div class="balance-pill-head">
+            <i data-lucide="arrow-up-right" style="color:var(--green);stroke-width:2.5"></i>
+            <span class="balance-pill-label">Gelir</span>
+          </div>
+          <div class="balance-pill-val" id="income-total" style="color:var(--text-1)">₺0,00</div>
+        </div>
+        <div class="balance-pill">
+          <div class="balance-pill-head">
+            <i data-lucide="arrow-down-right" style="color:var(--red);stroke-width:2.5"></i>
+            <span class="balance-pill-label">Gider</span>
+          </div>
+          <div class="balance-pill-val" id="expense-total" style="color:var(--text-1)">₺0,00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+      <div class="qs-card"><div class="qs-label">Bugün</div><div class="qs-val" id="qs-day">₺0</div></div>
+      <div class="qs-card"><div class="qs-label">Hafta</div><div class="qs-val" id="qs-week">₺0</div></div>
+      <div class="qs-card"><div class="qs-label">Ay</div><div class="qs-val" id="qs-month">₺0</div></div>
+      <div class="qs-card"><div class="qs-label">Yıl</div><div class="qs-val" id="qs-year">₺0</div></div>
+    </div>
+
+    <!-- Insights -->
+    <div class="section-label" style="font-size:14px;color:var(--text-2);font-weight:700;margin-top:6px">
+      Öngörüler
+    </div>
+    <div class="insight-row" id="insights"></div>
+
+    <!-- Donut Chart -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-label">Kategori Dağılımı</span>
+        <span class="card-badge">Gider</span>
+      </div>
+      <div style="max-width:190px;margin:0 auto"><canvas id="donut-chart"></canvas></div>
+      <div class="pie-legend" id="donut-legend"></div>
+    </div>
+
+    <!-- Bar Chart -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-label">Aylık Karşılaştırma</span>
+        <div style="display:flex;gap:10px;font-size:11px;font-weight:600">
+          <span style="color:var(--green)">● Gelir</span>
+          <span style="color:var(--red)">● Gider</span>
+        </div>
+      </div>
+      <canvas id="bar-chart" style="height:150px"></canvas>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="section-label">
+      Son İşlemler
+      <span class="section-label-action" onclick="showScreen('transactions')">Tümü →</span>
+    </div>
+    <div class="card">
+      <div id="recent-txs"></div>
+    </div>
+
+    <div class="license">License: BekirAtes</div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━ TRANSACTIONS ━━━━━━━━━━━━━━━ -->
+<div id="screen-transactions" class="screen">
+  <div class="page-header">
+    <div class="page-header-left" style="display:flex; align-items:center; gap:12px;">
+      <img src="app_icon_512.png" alt="Logo" style="width:40px; height:40px; border-radius:10px; object-fit:contain;">
+      <div class="username">İşlemler</div>
+    </div>
+    <button class="icon-btn" onclick="openAddModal('expense')">
+      <i data-lucide="plus" style="stroke-width:2.5"></i>
+    </button>
+  </div>
+  <div class="scroll-area" style="padding-top:0">
+    <div class="card">
+      <div class="card-header"><span class="card-label">7 Günlük Harcama</span></div>
+      <canvas id="trend-chart" style="height:100px"></canvas>
+    </div>
+    <div class="filter-scroll" id="tx-filters"></div>
+    <div class="card"><div id="tx-list"></div></div>
+    <div class="license">License: BekirAtes</div>
+  </div>
+  <button class="fab" onclick="openAddModal('expense')">
+    <i data-lucide="plus" style="stroke-width:2.5"></i>
+  </button>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━ FIXED ━━━━━━━━━━━━━━━ -->
+<div id="screen-fixed" class="screen">
+  <div class="page-header">
+    <div class="page-header-left" style="display:flex; align-items:center; gap:12px;">
+      <img src="app_icon_512.png" alt="Logo" style="width:40px; height:40px; border-radius:10px; object-fit:contain;">
+      <div>
+        <div class="greeting">Aylık Toplam</div>
+        <div class="username" id="fixed-total">₺0,00</div>
+      </div>
+    </div>
+    <button class="icon-btn" onclick="openFixedModal()">
+      <i data-lucide="plus" style="stroke-width:2.5"></i>
+    </button>
+  </div>
+  <div class="scroll-area" style="padding-top:0">
+    <div class="card">
+      <div class="card-header"><span class="card-label">Sabit Gider Dağılımı</span></div>
+      <canvas id="fixed-chart" style="height:120px"></canvas>
+    </div>
+    <div id="fixed-list"></div>
+    <div class="license">License: BekirAtes</div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━ CATEGORIES ━━━━━━━━━━━━━━━ -->
+<div id="screen-categories" class="screen">
+  <div class="page-header">
+    <div class="page-header-left" style="display:flex; align-items:center; gap:12px;">
+      <img src="app_icon_512.png" alt="Logo" style="width:40px; height:40px; border-radius:10px; object-fit:contain;">
+      <div class="username">Kategoriler</div>
+    </div>
+    <button class="icon-btn" onclick="openCatModal()">
+      <i data-lucide="plus" style="stroke-width:2.5"></i>
+    </button>
+  </div>
+  <div class="scroll-area" style="padding-top:0">
+    <div id="cat-list"></div>
+    <div class="license">License: BekirAtes</div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━ SETTINGS ━━━━━━━━━━━━━━━ -->
+<div id="screen-settings" class="screen">
+  <div class="page-header">
+    <div class="page-header-left" style="display:flex; align-items:center; gap:12px;">
+      <img src="app_icon_512.png" alt="Logo" style="width:40px; height:40px; border-radius:10px; object-fit:contain;">
+      <div class="username">Ayarlar</div>
+    </div>
+  </div>
+  <div class="scroll-area" style="padding-top:0">
+
+    <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px">Görünüm</div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-icon" style="background:rgba(253,196,0,0.15)">
+          <i data-lucide="sun-moon" style="stroke:#ffd60a;stroke-width:2"></i>
+        </div>
+        <div class="settings-row-body">
+          <div class="settings-row-label" id="theme-label">Koyu Mod</div>
+          <div class="settings-row-sub">Tema değiştir</div>
+        </div>
+      </div>
+      <div class="toggle-switch" id="theme-toggle" onclick="toggleTheme()"></div>
+    </div>
+
+    <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.7px;margin:16px 0 8px">Hesap & Bütçe</div>
+    
+    <!-- NEW V3: Budget Set -->
+    <div class="settings-row" onclick="openBudgetModal()" style="cursor:pointer">
+      <div class="settings-row-left" style="display:flex;align-items:center">
+        <div class="settings-row-icon" style="background:rgba(74,139,255,0.12)">
+          <i data-lucide="target" style="stroke:var(--blue);stroke-width:2"></i>
+        </div>
+        <div class="settings-row-body">
+          <div class="settings-row-label">Aylık Bütçe</div>
+          <div class="settings-row-sub" id="budget-set-label">Tanımlanmadı</div>
+        </div>
+      </div>
+      <i data-lucide="chevron-right" style="stroke:var(--text-3);stroke-width:2;width:18px;height:18px"></i>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-row-left" style="display:flex;align-items:center">
+        <div class="settings-row-icon" style="background:rgba(0,214,143,0.12)">
+          <i data-lucide="user" style="stroke:var(--green);stroke-width:2"></i>
+        </div>
+        <div class="settings-row-body">
+          <div class="settings-row-label">Kullanıcı</div>
+          <div class="settings-row-sub">Bekir ATEŞ</div>
+        </div>
+      </div>
+      <i data-lucide="check" style="stroke:var(--green);stroke-width:2.5;width:20px;height:20px"></i>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-left" style="display:flex;align-items:center">
+        <div class="settings-row-icon" style="background:rgba(179,93,242,0.12)">
+          <i data-lucide="bar-chart-2" style="stroke:var(--purple);stroke-width:2"></i>
+        </div>
+        <div class="settings-row-body">
+          <div class="settings-row-label">İşlem Sayısı</div>
+          <div class="settings-row-sub" id="tx-count-label">0 işlem</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.7px;margin:16px 0 8px">Veri</div>
+    <div class="settings-row" onclick="exportCSV()" style="cursor:pointer">
+      <div class="settings-row-left">
+        <div class="settings-row-icon" style="background:rgba(46,196,182,0.12)">
+          <i data-lucide="download" style="stroke:#2ec4b6;stroke-width:2"></i>
+        </div>
+        <div class="settings-row-body">
+          <div class="settings-row-label">CSV Dışa Aktar</div>
+          <div class="settings-row-sub">Tüm işlemleri indir</div>
+        </div>
+      </div>
+      <i data-lucide="chevron-right" style="stroke:var(--text-3);stroke-width:2;width:18px;height:18px"></i>
+    </div>
+    <div class="settings-row" onclick="clearAllData()" style="cursor:pointer">
+      <div class="settings-row-left" style="display:flex;align-items:center">
+        <div class="settings-row-icon" style="background:rgba(255,74,112,0.12)">
+          <i data-lucide="trash-2" style="stroke:var(--red);stroke-width:2"></i>
+        </div>
+        <div class="settings-row-body">
+          <div class="settings-row-label" style="color:var(--red)">Verileri Temizle</div>
+          <div class="settings-row-sub">Tüm kayıtlar silinir</div>
+        </div>
+      </div>
+      <i data-lucide="chevron-right" style="stroke:var(--text-3);stroke-width:2;width:18px;height:18px"></i>
+    </div>
+
+    <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.7px;margin:16px 0 8px">Hakkında</div>
+    <div class="card" style="text-align:center;padding:24px">
+      <div class="about-logo"><i data-lucide="wallet" style="width:36px;height:36px;color:#fff;stroke-width:2"></i></div>
+      <div style="font-size:22px;font-weight:900;letter-spacing:-0.4px">Gelir·Gider</div>
+      <div style="font-size:13px;color:var(--text-3);margin-top:4px">Finansal Takip Uygulaması</div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:2px">Sürüm 1.1.0</div>
+      <div style="margin-top:16px;font-size:12px;font-weight:600;color:var(--text-3)">License: BekirAtes</div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:2px">© 2026 Bekir ATEŞ · Tüm hakları saklıdır</div>
+    </div>
+
+    <div class="license">License: BekirAtes</div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━ BOTTOM NAV ━━━━━━━━━━━━━━━ -->
+<nav class="bottom-nav">
+  <div class="nav-item active" data-screen="home" onclick="showScreen('home')">
+    <div class="nav-dot"></div>
+    <div class="nav-icon-wrap"><i data-lucide="home" style="stroke-width:2"></i></div>
+    <span class="nav-label">Ana Sayfa</span>
+  </div>
+  <div class="nav-item" data-screen="transactions" onclick="showScreen('transactions')">
+    <div class="nav-dot"></div>
+    <div class="nav-icon-wrap"><i data-lucide="receipt-text" style="stroke-width:2"></i></div>
+    <span class="nav-label">İşlemler</span>
+  </div>
+  <div class="nav-item" data-screen="fixed" onclick="showScreen('fixed')">
+    <div class="nav-dot"></div>
+    <div class="nav-icon-wrap"><i data-lucide="calendar-clock" style="stroke-width:2"></i></div>
+    <span class="nav-label">Sabit</span>
+  </div>
+  <div class="nav-item" data-screen="categories" onclick="showScreen('categories')">
+    <div class="nav-dot"></div>
+    <div class="nav-icon-wrap"><i data-lucide="layers" style="stroke-width:2"></i></div>
+    <span class="nav-label">Kategoriler</span>
+  </div>
+  <div class="nav-item" data-screen="settings" onclick="showScreen('settings')">
+    <div class="nav-dot"></div>
+    <div class="nav-icon-wrap"><i data-lucide="settings-2" style="stroke-width:2"></i></div>
+    <span class="nav-label">Ayarlar</span>
+  </div>
+</nav>
+</div><!-- /app -->
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+
+<!-- ADD/EDIT TRANSACTION -->
+<div class="modal-overlay" id="modal-add" onclick="if(event.target===this)closeModal('modal-add')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-add-title">Gelir - Gider Ekle</div>
+
+    <div class="type-toggle">
+      <button class="type-btn expense active" data-type="expense" onclick="setAddType('expense')">
+        <i data-lucide="arrow-down-circle" style="stroke-width:2.5"></i> Gider
+      </button>
+      <button class="type-btn income" data-type="income" onclick="setAddType('income')">
+        <i data-lucide="arrow-up-circle" style="stroke-width:2.5"></i> Gelir
+      </button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="coins" style="stroke-width:2"></i> Tutar (₺)</label>
+      <input class="form-input" id="add-amount" type="number" inputmode="decimal" placeholder="0,00" min="0" step="0.01">
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="tag" style="stroke-width:2"></i> Kategori</label>
+      <div class="cat-chips" id="add-cat-chips"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="pencil-line" style="stroke-width:2"></i> Not</label>
+      <input class="form-input" id="add-note" type="text" placeholder="Açıklama (isteğe bağlı)">
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="calendar" style="stroke-width:2"></i> Tarih</label>
+      <input class="form-input" id="add-date" type="date">
+    </div>
+
+    <button class="btn-primary" onclick="saveTransaction()">
+      <i data-lucide="save" style="stroke-width:2.5"></i> Kaydet
+    </button>
+    <button class="btn-primary btn-danger" id="del-tx-btn" onclick="deleteTx()" style="margin-top:10px;display:none">
+      <i data-lucide="trash-2" style="stroke-width:2.5"></i> İşlemi Sil
+    </button>
+    <button class="btn-ghost" onclick="closeModal('modal-add')">
+      <i data-lucide="x" style="stroke-width:2"></i> İptal
+    </button>
+  </div>
+</div>
+
+<!-- FIXED EXPENSE MODAL -->
+<div class="modal-overlay" id="modal-fixed" onclick="if(event.target===this)closeModal('modal-fixed')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-fixed-title">Sabit Ödeme Ekle</div>
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="file-text" style="stroke-width:2"></i> Ödeme Adı</label>
+      <input class="form-input" id="fixed-name" type="text" placeholder="ör: Kira, Netflix, Elektrik…">
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="coins" style="stroke-width:2"></i> Tutar (₺)</label>
+      <input class="form-input" id="fixed-amount" type="number" inputmode="decimal" placeholder="0,00" min="0">
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="calendar-days" style="stroke-width:2"></i> Ödeme Günü (ayın kaçı)</label>
+      <input class="form-input" id="fixed-payday" type="number" min="1" max="31" value="1" placeholder="1–31">
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="tag" style="stroke-width:2"></i> Kategori</label>
+      <select class="form-select" id="fixed-cat-select"></select>
+    </div>
+    <button class="btn-primary" onclick="saveFixed()">
+      <i data-lucide="save" style="stroke-width:2.5"></i> Kaydet
+    </button>
+    <button class="btn-primary btn-danger" id="del-fixed-btn" onclick="deleteFixed()" style="margin-top:10px;display:none">
+      <i data-lucide="trash-2" style="stroke-width:2.5"></i> Ödemeyi Sil
+    </button>
+    <button class="btn-ghost" onclick="closeModal('modal-fixed')">
+      <i data-lucide="x" style="stroke-width:2"></i> İptal
+    </button>
+  </div>
+</div>
+
+<!-- BUDGET SETTING MODAL -->
+<div class="modal-overlay" id="modal-budget" onclick="if(event.target===this)closeModal('modal-budget')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Aylık Bütçe</div>
+    
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="target" style="stroke-width:2"></i> Hedef Bütçe (₺)</label>
+      <input class="form-input" id="budget-in" type="number" inputmode="decimal" placeholder="ör: 10000" min="0">
+    </div>
+    
+    <button class="btn-primary" onclick="saveBudget()">
+      <i data-lucide="check" style="stroke-width:2.5"></i> Kaydet
+    </button>
+    <button class="btn-ghost" onclick="closeModal('modal-budget')">
+      İptal
+    </button>
+  </div>
+</div>
+
+<!-- CATEGORY ADD MODAL -->
+<div class="modal-overlay" id="modal-cat" onclick="if(event.target===this)closeModal('modal-cat')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Yeni Kategori</div>
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="type" style="stroke-width:2"></i> Kategori Adı</label>
+      <input class="form-input" id="cat-name-in" type="text" placeholder="ör: Faturalar, Kredi Kartı…">
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="smile" style="stroke-width:2"></i> İkon (Görsel yoksa kullanılır)</label>
+      <input class="form-input" id="cat-icon-in" type="text" placeholder="📦" maxlength="4" style="font-size:26px;text-align:center;margin-bottom:8px">
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="image" style="stroke-width:2"></i> Özel Görsel (İkon yerine geçer)</label>
+      <div style="display:flex; gap:10px; align-items:center; background:var(--bg-input); padding:8px 12px; border-radius:16px; border:1px solid var(--border)">
+        <label for="cat-img-in" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; font-weight:700; font-size:14px; color:var(--text-1);">
+          <i data-lucide="camera"></i> Görsel Seç/Çek
+        </label>
+        <input type="file" id="cat-img-in" accept="image/*" style="display:none" onchange="handleCatImage(event)">
+        <div id="cat-img-preview" class="tx-avatar" style="display:none; width:36px; height:36px; min-width:36px;"></div>
+        <button class="btn-util del" id="cat-img-remove" style="display:none" onclick="removeCatImage()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="palette" style="stroke-width:2"></i> Renk</label>
+      <div class="color-swatches">
+        <div class="swatch selected" data-color="#00d68f" style="background:#00d68f" onclick="selectColor(this)"></div>
+        <div class="swatch" data-color="#4d79ff" style="background:#4d79ff" onclick="selectColor(this)"></div>
+        <div class="swatch" data-color="#ff4d6d" style="background:#ff4d6d" onclick="selectColor(this)"></div>
+        <div class="swatch" data-color="#ff9843" style="background:#ff9843" onclick="selectColor(this)"></div>
+        <div class="swatch" data-color="#9b4de0" style="background:#9b4de0" onclick="selectColor(this)"></div>
+        <div class="swatch" data-color="#ffd60a" style="background:#ffd60a" onclick="selectColor(this)"></div>
+        <div class="swatch" data-color="#00b4d8" style="background:#00b4d8" onclick="selectColor(this)"></div>
+        <div class="swatch" data-color="#ff6b35" style="background:#ff6b35" onclick="selectColor(this)"></div>
+        <div class="swatch" data-color="#2ec4b6" style="background:#2ec4b6" onclick="selectColor(this)"></div>
+        <div class="swatch" data-color="#e63946" style="background:#e63946" onclick="selectColor(this)"></div>
+        <div class="swatch" data-color="#9898b8" style="background:#9898b8" onclick="selectColor(this)"></div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="saveCat()">
+      <i data-lucide="save" style="stroke-width:2.5"></i> Kaydet
+    </button>
+    <button class="btn-ghost" onclick="closeModal('modal-cat')">
+      <i data-lucide="x" style="stroke-width:2"></i> İptal
+    </button>
+  </div>
+</div>
+
+<!-- CATEGORY DETAIL MODAL -->
+<div class="modal-overlay" id="modal-cat-detail" onclick="if(event.target===this)closeModal('modal-cat-detail')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="cat-detail-title"></div>
+    <div id="cat-detail-body"></div>
+    <button class="btn-ghost" onclick="closeModal('modal-cat-detail')">
+      <i data-lucide="x" style="stroke-width:2"></i> Kapat
+    </button>
+  </div>
+</div>
+</div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js');
+    });
+  }
+</script>
+<script src="app.js"></script>
+<script>
+// Init Lucide icons (after DOM + app.js load)
+function initIcons() { if (window.lucide) lucide.createIcons(); }
+
+function selectColor(el) {
+  newCatColor = el.dataset.color;
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+setInterval(() => {
+  const el = document.getElementById('tx-count-label');
+  if (el) el.textContent = (state?.transactions?.length || 0) + ' işlem';
+  initIcons();
+}, 2500);
+
+window.addEventListener('resize', () => {
+  if (currentScreen === 'home') renderHome();
+  if (currentScreen === 'transactions') renderTransactions();
+});
+</script>
+</body>
+</html>
