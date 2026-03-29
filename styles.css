@@ -458,6 +458,23 @@ canvas { display:block; width:100% !important; }
 .license { text-align:center; padding:20px 0 10px; font-size:11px; color:var(--text-3); font-weight:600; letter-spacing:0.5px; opacity:0; animation:fade 1s forwards 0.5s; }
 @keyframes fade { to { opacity:0.5; } }
 
+/* ============ TRANSACTION GROUPING ============ */
+.tx-group-header {
+  font-size: 13px; font-weight: 800; color: var(--text-3); text-transform: uppercase;
+  letter-spacing: 0.8px; padding: 16px 0 8px; border-bottom: 1px solid var(--border);
+  margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+}
+.tx-group-total { font-size: 11px; opacity: 0.6; }
+
+/* ============ FIXED DURATION BADGE ============ */
+.fixed-duration-badge {
+  font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 8px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  color: var(--text-3); display: inline-flex; align-items: center; gap: 4px;
+}
+.fixed-duration-badge.active { color: var(--green); border-color: rgba(0,214,143,0.3); background: rgba(0,214,143,0.05); }
+.fixed-duration-badge.warning { color: var(--orange); border-color: rgba(255,171,74,0.3); background: rgba(255,171,74,0.05); }
+
 /* SAFARI BACKDROP FIXES */
 .card, .bottom-nav, .modal-overlay, .modal-sheet, .period-tabs, .icon-btn, .qs-card, .insight-chip, .settings-row, .type-toggle {
   -webkit-backdrop-filter: blur(20px);

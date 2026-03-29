@@ -100,6 +100,14 @@ function formatDate(dateStr) {
   const d = new Date(dateStr);
   return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
+function formatTime(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+}
+function getDayName(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('tr-TR', { weekday: 'long' });
+}
 
 // triggers lucide icon parsing
 function refreshIcons() {
@@ -438,6 +446,7 @@ function txHTML(tx) {
       </div>
     </div>
     <div class="tx-amount ${cCls}">${cSgn}₺${fmtShort(tx.amount)}</div>
+    <div style="font-size:10px;color:var(--text-3);margin-left:8px;font-weight:700">${formatTime(tx.createdAt || tx.date)}</div>
   </div>`;
 }
 
@@ -479,7 +488,35 @@ function renderTransactions() {
   chipEl.innerHTML = filterOpts.map(f => `<div class="filter-chip ${state.filterCat===f.id?'active':''}" onclick="setFilter('${f.id}')"><i data-lucide="${f.icon}"></i> ${f.label}</div>`).join('');
 
   const listEl = document.getElementById('tx-list');
-  listEl.innerHTML = txs.length ? txs.map(tx => txHTML(tx)).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="ghost" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>Kayıt bulunamadı</p></div>';
+  if (txs.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="ghost" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>Kayıt bulunamadı</p></div>';
+  } else {
+    // Grouping logic
+    const groups = {};
+    txs.forEach(t => {
+      const d = t.date.slice(0,10);
+      if (!groups[d]) groups[d] = { txs: [], total: 0 };
+      groups[d].txs.push(t);
+      groups[d].total += (t.type === 'expense' ? -t.amount : t.amount);
+    });
+
+    let html = '';
+    Object.keys(groups).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
+      const g = groups[date];
+      const dateObj = new Date(date);
+      const isToday = date === today();
+      const label = isToday ? 'Bugün' : formatDate(date);
+      const dayName = getDayName(date);
+      html += `
+        <div class="tx-group-header">
+          <span>${label} <small style="margin-left:4px;opacity:0.6">${dayName}</small></span>
+          <span class="tx-group-total" style="color:${g.total>=0?'var(--green)':'var(--red)'}">${g.total>=0?'+':''}₺${fmtShort(g.total)}</span>
+        </div>
+        ${g.txs.map(tx => txHTML(tx)).join('')}
+      `;
+    });
+    listEl.innerHTML = html;
+  }
 
   // Line chart for spending trend
   const last7 = []; const last7labels = [];
@@ -506,14 +543,29 @@ function renderFixed() {
     const days = daysUntilPayment(f.payDay);
     const isWarning = days <= 2;
     const cat = getCatById(f.categoryId);
-    return `<div class="card ${isWarning ? 'warning-blink' : ''}" style="${isWarning?'border:1.5px solid var(--red)':''}; margin-bottom:12px; cursor:default">
+    
+    // Duration logic
+    let durationText = '';
+    let isExpired = false;
+    if (f.duration && f.duration > 0) {
+      const start = new Date(f.startDate || f.createdAt || new Date());
+      const now = new Date();
+      const elapsed = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()) + 1;
+      const rem = f.duration - elapsed;
+      durationText = `<div class="fixed-duration-badge ${rem<=1?'warning':'active'}">${elapsed} / ${f.duration} Ay</div>`;
+      if (elapsed >= f.duration) isExpired = true;
+    }
+
+    return `<div class="card ${isWarning ? 'warning-blink' : ''}" style="${isWarning?'border:1.5px solid var(--red)':''}; margin-bottom:12px; cursor:default; opacity:${isExpired?0.5:1}">
       <div style="display:flex;align-items:center;gap:14px;">
         <div class="tx-avatar" style="background:${cat.color}25;color:${cat.color}">
           ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px"></i>`}
         </div>
         <div style="flex:1">
-          <div style="font-weight:700;font-size:15px;color:var(--text-1)">${f.name}</div>
-          <div style="font-size:12px;color:var(--text-3);margin-top:2px">Ayın ${f.payDay}. günü</div>
+          <div style="font-weight:700;font-size:15px;color:var(--text-1)">${f.name} ${isExpired?'<small>(Bitti)</small>':''}</div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:6px">
+            Ayın ${f.payDay}. günü ${durationText}
+          </div>
           <div style="font-size:12px;color:${isWarning?'var(--red)':'var(--text-2)'};font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px">
             <i data-lucide="clock" style="width:12px;height:12px"></i> ${days} gün kaldı
           </div>
@@ -667,6 +719,7 @@ function openFixedModal() {
   document.getElementById('fixed-name').value = '';
   document.getElementById('fixed-amount').value = '';
   document.getElementById('fixed-payday').value = '1';
+  document.getElementById('fixed-duration').value = '0';
   document.getElementById('fixed-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   document.getElementById('del-fixed-btn').style.display = 'none';
   document.getElementById('modal-fixed').classList.add('open');
@@ -679,6 +732,7 @@ function openEditFixed(id) {
   document.getElementById('fixed-name').value = f.name;
   document.getElementById('fixed-amount').value = f.amount;
   document.getElementById('fixed-payday').value = f.payDay;
+  document.getElementById('fixed-duration').value = f.duration || 0;
   document.getElementById('fixed-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}" ${c.id===f.categoryId?'selected':''}>${c.name}</option>`).join('');
   document.getElementById('del-fixed-btn').style.display = 'flex';
   document.getElementById('modal-fixed').classList.add('open');
@@ -687,14 +741,15 @@ function saveFixed() {
   const name = document.getElementById('fixed-name').value.trim();
   const amount = parseFloat(document.getElementById('fixed-amount').value);
   const payDay = parseInt(document.getElementById('fixed-payday').value);
+  const duration = parseInt(document.getElementById('fixed-duration').value) || 0;
   const categoryId = document.getElementById('fixed-cat-select').value;
   if (!name || !amount || !payDay) { alert('Lütfen tüm alanları doldurun.'); return; }
   
   if (editFixedId) {
     const idx = state.fixedExpenses.findIndex(x => x.id === editFixedId);
-    if (idx !== -1) state.fixedExpenses[idx] = { ...state.fixedExpenses[idx], name, amount, payDay, categoryId };
+    if (idx !== -1) state.fixedExpenses[idx] = { ...state.fixedExpenses[idx], name, amount, payDay, duration, categoryId };
   } else {
-    state.fixedExpenses.push({ id: uid(), name, amount, payDay, categoryId, createdAt: new Date().toISOString() });
+    state.fixedExpenses.push({ id: uid(), name, amount, payDay, duration, categoryId, startDate: today(), createdAt: new Date().toISOString() });
   }
   saveState(); closeModal('modal-fixed'); renderFixed(); renderHome();
 }

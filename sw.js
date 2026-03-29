@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gelir-gider-v4-premium';
+const CACHE_NAME = 'gelir-gider-v1.1.0';
 const ASSETS = [
   './index.html',
   './styles.css',
