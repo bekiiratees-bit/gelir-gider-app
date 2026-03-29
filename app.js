@@ -15,6 +15,7 @@ let state = {
     { id: 'cat9', name: 'Diğer', icon: 'package', color: '#a1a1ba' },
   ],
   fixedExpenses: [],
+  planningItems: [],
   period: 'month',
   filterCat: 'all',
   monthlyBudget: 0
@@ -293,12 +294,18 @@ let editTxId = null;
 let editFixedId = null;
 let editCatId = null;
 let addCatImage = null; // for category custom image upload
+let addPlanImage = null; // for planning custom image upload
+
+// Calendar state
+let calMonth = new Date().getMonth();
+let calYear = new Date().getFullYear();
 
 // ===================== RENDER =====================
 function renderApp() {
   renderHome();
   renderTransactions();
   renderFixed();
+  renderPlanning();
   renderCategories();
   renderSettings();
   refreshIcons();
@@ -389,6 +396,7 @@ function renderHome() {
     budEl.style.display = 'none';
   }
 
+  renderCalendar('home-calendar-grid', 'home-calendar-title');
   renderFixedWarnings();
 }
 
@@ -575,6 +583,7 @@ function showScreen(name) {
   if (name === 'home') renderHome();
   if (name === 'transactions') renderTransactions();
   if (name === 'fixed') renderFixed();
+  if (name === 'planning') renderPlanning();
   if (name === 'categories') renderCategories();
   if (name === 'settings') renderSettings();
   refreshIcons();
@@ -789,6 +798,187 @@ function deleteCat(id) {
   state.transactions = state.transactions.map(t => t.categoryId===id ? {...t, categoryId:'cat9'} : t);
   saveState(); renderCategories(); renderApp();
 }
+
+// ===================== PLANNING & CALENDAR =====================
+function renderPlanning() {
+  const el = document.getElementById('planning-list');
+  if (!el) return;
+
+  // Render list
+  const items = [...state.planningItems].sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
+  
+  el.innerHTML = items.length ? items.map(p => {
+    const cat = getCatById(p.categoryId);
+    const date = new Date(p.dueDate);
+    const diff = Math.ceil((date - nowDate().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+    const isToday = diff === 0;
+    const isTomorrow = diff === 1;
+    const isWarning = diff <= 1 && diff >= 0;
+
+    return `<div class="card ${isWarning ? 'warning-blink' : ''}" style="${isWarning?'border:1.5px solid var(--red)':''}; margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="tx-avatar" style="background:${cat.color}25;color:${cat.color}">
+          ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px"></i>`}
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px;color:var(--text-1)">${p.name}</div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:2px">${formatDate(p.dueDate)}</div>
+          <div style="font-size:12px;color:${isWarning?'var(--red)':'var(--text-2)'};font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px">
+            <i data-lucide="clock" style="width:12px;height:12px"></i> ${isToday ? 'Bugün!' : isTomorrow ? 'Yarın!' : diff + ' gün kaldı'}
+          </div>
+        </div>
+        <button class="btn-util edit" onclick="openEditPlanning('${p.id}')"><i data-lucide="pencil-line"></i></button>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="calendar-plus" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>Planlanan ödeme yok</p></div>';
+
+  renderCalendar('plan-calendar-grid', 'plan-calendar-title');
+  refreshIcons();
+}
+
+function renderCalendar(gridId, titleId) {
+  const grid = document.getElementById(gridId);
+  const title = document.getElementById(titleId);
+  if (!grid || !title) return;
+
+  const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+  title.textContent = `${monthNames[calMonth]} ${calYear}`;
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const offset = firstDay === 0 ? 6 : firstDay - 1;
+
+  let html = '';
+  const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+  days.forEach(d => html += `<div class="calendar-day-label">${d}</div>`);
+
+  for (let i = 0; i < offset; i++) html += `<div></div>`;
+
+  const now = new Date();
+  now.setHours(0,0,0,0);
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const isToday = now.getFullYear() === calYear && now.getMonth() === calMonth && now.getDate() === d;
+    
+    // Check for events
+    const dayEvents = state.planningItems.filter(p => p.dueDate === dateStr);
+    const hasEvent = dayEvents.length > 0;
+    
+    // Check for alerts (tomorrow)
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+    const isAlert = dayEvents.some(p => p.dueDate === tomorrowStr || p.dueDate === now.toISOString().slice(0, 10));
+
+    html += `
+      <div class="calendar-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}">
+        ${d}
+        ${hasEvent ? `<div class="day-event-dot"></div>` : ''}
+        ${isAlert ? `<div class="day-event-alert"></div>` : ''}
+      </div>
+    `;
+  }
+
+  grid.innerHTML = html;
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar('home-calendar-grid', 'home-calendar-title');
+  renderCalendar('plan-calendar-grid', 'plan-calendar-title');
+}
+
+function openPlanningModal() {
+  editPlanningId = null;
+  document.getElementById('modal-planning-title').textContent = 'Planlı Ödeme Ekle';
+  document.getElementById('plan-name').value = '';
+  document.getElementById('plan-date').value = today();
+  document.getElementById('plan-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  removePlanImage();
+  document.getElementById('del-plan-btn').style.display = 'none';
+  document.getElementById('modal-planning').classList.add('open');
+}
+
+function openEditPlanning(id) {
+  const p = state.planningItems.find(x => x.id === id);
+  if (!p) return;
+  editPlanningId = id;
+  document.getElementById('modal-planning-title').textContent = 'Ödemeyi Düzenle';
+  document.getElementById('plan-name').value = p.name;
+  document.getElementById('plan-date').value = p.dueDate;
+  document.getElementById('plan-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}" ${c.id===p.categoryId?'selected':''}>${c.name}</option>`).join('');
+  removePlanImage();
+  if (p.image) {
+    addPlanImage = p.image;
+    const prev = document.getElementById('plan-img-preview');
+    prev.style.display = 'flex';
+    prev.innerHTML = `<img src="${addPlanImage}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+    document.getElementById('plan-img-remove').style.display = 'flex';
+  }
+  document.getElementById('del-plan-btn').style.display = 'flex';
+  document.getElementById('modal-planning').classList.add('open');
+}
+
+function savePlanning() {
+  const name = document.getElementById('plan-name').value.trim();
+  const dueDate = document.getElementById('plan-date').value;
+  const categoryId = document.getElementById('plan-cat-select').value;
+  if (!name || !dueDate) { alert('Lütfen tüm alanları doldurun.'); return; }
+
+  if (editPlanningId) {
+    const idx = state.planningItems.findIndex(x => x.id === editPlanningId);
+    if (idx !== -1) state.planningItems[idx] = { ...state.planningItems[idx], name, dueDate, categoryId, image: addPlanImage };
+  } else {
+    state.planningItems.push({ id: uid(), name, dueDate, categoryId, image: addPlanImage, createdAt: new Date().toISOString() });
+  }
+  
+  saveState(); closeModal('modal-planning'); renderApp();
+}
+
+function deletePlanning() {
+  if (!editPlanningId) return;
+  if (!confirm('Bu planlı ödemeyi silmek istiyor musunuz?')) return;
+  state.planningItems = state.planningItems.filter(p => p.id !== editPlanningId);
+  saveState(); closeModal('modal-planning'); renderApp();
+}
+
+function handlePlanImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const size = 128;
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const minData = Math.min(img.width, img.height);
+      const sx = (img.width - minData) / 2;
+      const sy = (img.height - minData) / 2;
+      ctx.drawImage(img, sx, sy, minData, minData, 0, 0, size, size);
+      addPlanImage = canvas.toDataURL('image/webp', 0.85);
+      const p = document.getElementById('plan-img-preview');
+      p.style.display = 'flex';
+      p.innerHTML = `<img src="${addPlanImage}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+      document.getElementById('plan-img-remove').style.display = 'flex';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePlanImage() {
+  addPlanImage = null;
+  document.getElementById('plan-img-in').value = '';
+  document.getElementById('plan-img-preview').style.display = 'none';
+  document.getElementById('plan-img-remove').style.display = 'none';
+}
+
+let editPlanningId = null;
 
 function openCatDetail(catId) {
   const cat = getCatById(catId);

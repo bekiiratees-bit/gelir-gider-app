@@ -166,16 +166,42 @@ html, body {
 .icon-btn.expense { color:var(--red); }
 .icon-btn svg { width:22px; height:22px; }
 
-/* ============ BOTTOM NAV ============ */
+/* ============ CALENDAR & PLANNING ============ */
+.calendar-wrap { margin-bottom:20px; }
+.calendar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.calendar-title { font-size:15px; font-weight:800; color:var(--text-1); }
+.calendar-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; }
+.calendar-day-label { font-size:10px; font-weight:800; color:var(--text-3); text-align:center; padding-bottom:4px; text-transform:uppercase; }
+.calendar-day {
+  aspect-ratio:1; border-radius:12px; background:var(--bg-input); border:1px solid var(--border);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:var(--text-2); position:relative; transition:all 0.2s;
+}
+.calendar-day.today { border-color:var(--green); background:rgba(0,214,143,0.05); color:var(--text-1); }
+.calendar-day.selected { border-color:var(--text-1); transform:scale(0.95); }
+.calendar-day.has-event { border-color:var(--blue); color:var(--text-1); }
+.day-event-dot { width:4px; height:4px; border-radius:50%; background:var(--blue); position:absolute; bottom:6px; }
+.day-event-alert { position:absolute; inset:0; border-radius:inherit; border:1.5px solid var(--red); z-index:1; animation:blink-red 1s infinite; pointer-events:none; }
+
+@keyframes blink-red {
+  0% { opacity:0; }
+  50% { opacity:1; box-shadow:inset 0 0 10px rgba(255,74,112,0.4); }
+  100% { opacity:0; }
+}
+
+/* ============ REFINED BOTTOM NAV (6 ITEMS) ============ */
 .bottom-nav {
   position:fixed; bottom:0; left:50%; transform:translateX(-50%);
   width:100%; max-width:430px; height:calc(var(--nav-h) + var(--safe-b));
-  padding:8px 8px var(--safe-b);
+  padding:8px 4px var(--safe-b);
   background:rgba(10,10,20,0.85); box-shadow:0 -4px 32px rgba(0,0,0,0.4);
   backdrop-filter:blur(32px) saturate(200%); -webkit-backdrop-filter:blur(32px) saturate(200%);
   display:flex; align-items:center; justify-content:space-around; z-index:200;
   border-top:1px solid rgba(255,255,255,0.05);
 }
+.nav-label { font-size:9px; font-weight:700; letter-spacing: -0.2px; }
+.nav-item { gap:2px; }
+.nav-item svg { width:20px; height:20px; }
 [data-theme="light"] .bottom-nav { background:rgba(255,255,255,0.85); border-top:1px solid rgba(0,0,0,0.04); box-shadow:0 -4px 32px rgba(0,0,0,0.05); }
 
 .nav-item {

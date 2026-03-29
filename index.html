@@ -142,6 +142,18 @@
       <canvas id="bar-chart" style="height:150px"></canvas>
     </div>
 
+    <!-- Calendar Widget -->
+    <div class="card calendar-wrap">
+      <div class="calendar-header">
+        <div class="calendar-title" id="home-calendar-title">Takvim</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-util" onclick="changeMonth(-1)"><i data-lucide="chevron-left"></i></button>
+          <button class="btn-util" onclick="changeMonth(1)"><i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="calendar-grid" id="home-calendar-grid"></div>
+    </div>
+
     <!-- Recent Transactions -->
     <div class="section-label">
       Son İşlemler
@@ -200,6 +212,34 @@
       <canvas id="fixed-chart" style="height:120px"></canvas>
     </div>
     <div id="fixed-list"></div>
+    <div class="license">License: BekirAtes</div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━ PLANNING ━━━━━━━━━━━━━━━ -->
+<div id="screen-planning" class="screen">
+  <div class="page-header">
+    <div class="page-header-left" style="display:flex; align-items:center; gap:12px;">
+      <img src="app_icon_512.png" alt="Logo" style="width:40px; height:40px; border-radius:10px; object-fit:contain;">
+      <div class="username">Planlama</div>
+    </div>
+    <button class="icon-btn" onclick="openPlanningModal()">
+      <i data-lucide="plus" style="stroke-width:2.5"></i>
+    </button>
+  </div>
+  <div class="scroll-area" style="padding-top:0">
+    <!-- Calendar Widget -->
+    <div class="card calendar-wrap">
+      <div class="calendar-header">
+        <div class="calendar-title" id="plan-calendar-title">Takvim</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-util" onclick="changeMonth(-1)"><i data-lucide="chevron-left"></i></button>
+          <button class="btn-util" onclick="changeMonth(1)"><i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="calendar-grid" id="plan-calendar-grid"></div>
+    </div>
+    <div id="planning-list"></div>
     <div class="license">License: BekirAtes</div>
   </div>
 </div>
@@ -342,6 +382,11 @@
     <div class="nav-icon-wrap"><i data-lucide="calendar-clock" style="stroke-width:2"></i></div>
     <span class="nav-label">Sabit</span>
   </div>
+  <div class="nav-item" data-screen="planning" onclick="showScreen('planning')">
+    <div class="nav-dot"></div>
+    <div class="nav-icon-wrap"><i data-lucide="calendar-check" style="stroke-width:2"></i></div>
+    <span class="nav-label">Planlama</span>
+  </div>
   <div class="nav-item" data-screen="categories" onclick="showScreen('categories')">
     <div class="nav-dot"></div>
     <div class="nav-icon-wrap"><i data-lucide="layers" style="stroke-width:2"></i></div>
@@ -449,6 +494,53 @@
       <i data-lucide="check" style="stroke-width:2.5"></i> Kaydet
     </button>
     <button class="btn-ghost" onclick="closeModal('modal-budget')">
+      İptal
+    </button>
+  </div>
+</div>
+
+<!-- PLANNING MODAL -->
+<div class="modal-overlay" id="modal-planning" onclick="if(event.target===this)closeModal('modal-planning')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-planning-title">Planlı Ödeme Ekle</div>
+    
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="file-text" style="stroke-width:2"></i> Ödeme Adı</label>
+      <input class="form-input" id="plan-name" type="text" placeholder="ör: Kredi Ödemesi, Okul Taksiti…">
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="calendar-days" style="stroke-width:2"></i> Son Ödeme Tarihi</label>
+      <input class="form-input" id="plan-date" type="date">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="tag" style="stroke-width:2"></i> Kategori</label>
+      <select class="form-select" id="plan-cat-select"></select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="image" style="stroke-width:2"></i> Özel Görsel (Opsiyonel)</label>
+      <div style="display:flex; gap:10px; align-items:center; background:var(--bg-input); padding:8px 12px; border-radius:16px; border:1px solid var(--border)">
+        <label for="plan-img-in" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; font-weight:700; font-size:14px; color:var(--text-1);">
+          <i data-lucide="camera"></i> Görsel Seç
+        </label>
+        <input type="file" id="plan-img-in" accept="image/*" style="display:none" onchange="handlePlanImage(event)">
+        <div id="plan-img-preview" class="tx-avatar" style="display:none; width:36px; height:36px; min-width:36px;"></div>
+        <button class="btn-util del" id="plan-img-remove" style="display:none" onclick="removePlanImage()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="savePlanning()">
+      <i data-lucide="save" style="stroke-width:2.5"></i> Kaydet
+    </button>
+    <button class="btn-primary btn-danger" id="del-plan-btn" onclick="deletePlanning()" style="margin-top:10px;display:none">
+      <i data-lucide="trash-2" style="stroke-width:2.5"></i> Ödemeyi Sil
+    </button>
+    <button class="btn-ghost" onclick="closeModal('modal-planning')">
       İptal
     </button>
   </div>
