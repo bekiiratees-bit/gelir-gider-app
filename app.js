@@ -882,31 +882,28 @@ function renderPlanning() {
     const isWarning = diff <= 1;
 
     return `<div class="ultra-plan-card ${diff <= 1 ? 'urgent plan-neon-red' : 'plan-neon-green'}">
-      <div class="plan-header-row">
-        <div class="plan-date-viz">
-          <i data-lucide="calendar" style="width:14px; height:14px;"></i>
-          <span>${p.isRecurring ? `Her ayın ${new Date(p.dueDate).getDate()}. günü` : formatDate(p.dueDate)}</span>
-        </div>
-        <div class="plan-countdown-viz">
-          <div class="countdown-num">${isToday ? '0' : diff}</div>
-          <div class="countdown-label">${isToday ? 'BUGÜN' : 'GÜN KALDI'}</div>
-        </div>
+      <div class="tx-avatar" style="width:48px; height:48px; border-radius:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06);">
+        ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:22px;height:22px; color:${cat.color}; filter: drop-shadow(0 0 6px ${cat.color}50);"></i>`}
       </div>
       
-      <div style="display:flex;align-items:center;gap:20px;">
-        <div class="tx-avatar" style="width:64px; height:64px; border-radius:22px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
-          ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:20px">` : `<i data-lucide="${cat.icon}" style="width:28px;height:28px; color:${cat.color}; filter: drop-shadow(0 0 8px ${cat.color}60);"></i>`}
-        </div>
-        <div style="flex:1">
-          <div style="font-weight:900; font-size:22px; color:var(--text-1); letter-spacing:-1px; margin-bottom:4px;">${p.name}</div>
-          <div style="font-size:13px; color:var(--text-3); font-weight:800; text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
-            <span style="width:8px; height:8px; border-radius:50%; background:${cat.color}; box-shadow:0 0 10px ${cat.color};"></span> ${cat.name}
-          </div>
-        </div>
-        <button class="btn-util edit" onclick="openEditPlanning('${p.id}')" style="width:48px; height:48px; border-radius:16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
-          <i data-lucide="pencil-line" style="width:22px; height:22px;"></i>
-        </button>
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:900; font-size:16px; color:var(--text-1); letter-spacing:-0.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
+        <div style="font-size:10px; color:var(--text-3); font-weight:800; text-transform:uppercase; letter-spacing:0.8px; margin-top:2px;">${cat.name}</div>
       </div>
+
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+        <div class="plan-date-viz">
+          ${p.isRecurring ? `Aylık` : formatDate(p.dueDate).slice(0,6)}
+        </div>
+        <div class="plan-countdown-viz">
+          <div class="countdown-num" style="font-size:18px;">${isToday ? '0' : diff}</div>
+          <div class="countdown-label" style="font-size:7px;">GÜN</div>
+        </div>
+      </div>
+
+      <button class="btn-util edit" onclick="openEditPlanning('${p.id}')" style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+        <i data-lucide="pencil-line" style="width:18px; height:18px;"></i>
+      </button>
     </div>`;
   }).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="calendar-plus" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>Planlanan ödeme yok</p></div>';
 
