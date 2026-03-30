@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.8.4">
+<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.8.5">
 <meta name="theme-color" content="#07070f">
 <title>Gelir·Gider – Bekir ATEŞ</title>
 <style>
@@ -1239,7 +1239,7 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
     <button class="btn-ghost" onclick="closeModal('modal-cat-detail')">
       <i data-lucide="x" style="stroke-width:2"></i> Kapat
     </button>
-    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.8.4 • Bekir ATEŞ</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.8.5 • Bekir ATEŞ</div>
   </div>
 </div>
 </div>
@@ -1819,7 +1819,7 @@ function renderFixed() {
       displayAmount += interestAdded;
     }
 
-    return `<div class="ultra-plan-card" style="${isPaidThisMonth ? 'border:1px solid var(--green); background:rgba(0,214,143,0.05)' : ''}">
+    return `<div class="ultra-plan-card" style="cursor:pointer; ${isPaidThisMonth ? 'border:1px solid var(--green); background:rgba(0,214,143,0.05)' : ''}" onclick="openEditFixed('${f.id}')">
       <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
         <div class="tx-avatar" style="width:44px; height:44px; flex-shrink:0; border-radius:14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
           ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px;color:${cat.color}"></i>`}
@@ -1841,9 +1841,8 @@ function renderFixed() {
       </div>
 
       <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-        ${!isPaidThisMonth ? `<button class="btn-util" onclick="markFixedPaid('${f.id}')" style="color:var(--green); background:rgba(0,214,143,0.1); border:1px solid rgba(0,214,143,0.2);"><i data-lucide="check"></i></button>` : '<div class="fixed-paid-badge" style="padding:10px; background:var(--green)20; border-radius:12px;"><i data-lucide="check-circle" style="width:18px; height:18px; color:var(--green)"></i></div>'}
-        <button class="btn-fixed-end" onclick="endFixedPayment('${f.id}')" style="white-space:nowrap;"><i data-lucide="x-circle"></i> Bitir</button>
-        <button class="btn-util edit" onclick="openEditFixed('${f.id}')"><i data-lucide="pencil-line"></i></button>
+        ${!isPaidThisMonth ? `<button class="btn-util" onclick="event.stopPropagation(); markFixedPaid('${f.id}')" style="color:var(--green); background:rgba(0,214,143,0.1); border:1px solid rgba(0,214,143,0.2);"><i data-lucide="check"></i></button>` : '<div class="fixed-paid-badge" style="padding:10px; background:var(--green)20; border-radius:12px;"><i data-lucide="check-circle" style="width:18px; height:18px; color:var(--green)"></i></div>'}
+        <button class="btn-fixed-end" onclick="event.stopPropagation(); endFixedPayment('${f.id}')" style="width:40px; height:40px; padding:0;"><i data-lucide="x-circle"></i></button>
       </div>
     </div>`;
   }).join('') || '<div class="empty-state">Sabit ödeme yok</div>';
@@ -2551,7 +2550,7 @@ setInterval(() => {
 }, 2500);
 
 // Auto-reload on version change
-const VER = '1.8.4';
+const VER = '1.8.5';
 if (localStorage.getItem('app_v') !== VER) {
   localStorage.setItem('app_v', VER);
   window.location.reload(true);
