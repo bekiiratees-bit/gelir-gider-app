@@ -572,24 +572,26 @@ function renderFixed() {
     }
 
     return `<div class="ultra-plan-card" style="${isPaidThisMonth ? 'border:1px solid var(--green); background:rgba(0,214,143,0.05)' : ''}">
-      <div class="tx-avatar" style="width:48px; height:48px; border-radius:14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
-        ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px;color:${cat.color}"></i>`}
-      </div>
-      
-      <div style="flex:1; min-width:0;">
-        <div style="font-weight:900; font-size:15px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${f.name}</div>
-        <div style="font-size:10px; color:var(--text-3); font-weight:800; text-transform:uppercase;">${cat.name} • ${f.payDay}. gün</div>
-        ${interestAdded > 0 ? `<div class="interest-text" style="font-size:9px;"><i data-lucide="trending-up" style="width:10px; height:10px;"></i> +₺${interestAdded.toFixed(2)}</div>` : ''}
+      <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+        <div class="tx-avatar" style="width:44px; height:44px; flex-shrink:0; border-radius:14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
+          ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px;color:${cat.color}"></i>`}
+        </div>
+        
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center;">
+          <div style="font-weight:900; font-size:15px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${f.name}</div>
+          <div style="font-size:10px; color:var(--text-3); font-weight:800; text-transform:uppercase; margin-top:2px;">${cat.name} • ${f.payDay}. GÜN</div>
+          ${interestAdded > 0 ? `<div class="interest-text" style="font-size:9px; margin-top:2px;"><i data-lucide="trending-up" style="width:10px; height:10px;"></i> +₺${interestAdded.toFixed(2)}</div>` : ''}
+        </div>
       </div>
 
-      <div style="display:flex; flex-direction:column; align-items:flex-end;">
+      <div style="display:flex; flex-direction:column; align-items:flex-end; margin: 0 10px; flex-shrink:0;">
         <div style="font-weight:900; font-size:16px; color:var(--text-1)">₺${displayAmount.toLocaleString()}</div>
-        ${f.totalDebt ? `<div style="font-size:9px; font-weight:800; color:#ff9f43;">BORÇ: ₺${fmtShort(f.totalDebt)}</div>` : ''}
+        ${f.totalDebt ? `<div style="font-size:9px; font-weight:800; color:#ff9f43; margin-top:1px;">BORÇ: ₺${fmtShort(f.totalDebt)}</div>` : ''}
       </div>
 
-      <div style="display:flex; gap:6px; margin-left:10px;">
-        ${!isPaidThisMonth ? `<button class="btn-util" onclick="markFixedPaid('${f.id}')" style="color:var(--green); background:rgba(0,214,143,0.1); border:1px solid rgba(0,214,143,0.2);"><i data-lucide="check"></i></button>` : '<div class="fixed-paid-badge" style="padding:8px;"><i data-lucide="check-circle" style="width:16px; height:16px;"></i></div>'}
-        <button class="btn-fixed-end" onclick="endFixedPayment('${f.id}')"><i data-lucide="x-circle"></i> Bitir</button>
+      <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+        ${!isPaidThisMonth ? `<button class="btn-util" onclick="markFixedPaid('${f.id}')" style="color:var(--green); background:rgba(0,214,143,0.1); border:1px solid rgba(0,214,143,0.2);"><i data-lucide="check"></i></button>` : '<div class="fixed-paid-badge" style="padding:10px; background:var(--green)20; border-radius:12px;"><i data-lucide="check-circle" style="width:18px; height:18px; color:var(--green)"></i></div>'}
+        <button class="btn-fixed-end" onclick="endFixedPayment('${f.id}')" style="white-space:nowrap;"><i data-lucide="x-circle"></i> Bitir</button>
         <button class="btn-util edit" onclick="openEditFixed('${f.id}')"><i data-lucide="pencil-line"></i></button>
       </div>
     </div>`;

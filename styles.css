@@ -195,7 +195,7 @@ html, body {
   border: 1px solid rgba(182, 33, 255, 0.2); 
   backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
   box-shadow: 0 10px 30px rgba(98, 54, 255, 0.1);
-  display: flex; align-items: center; gap: 14px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
 .ultra-plan-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
@@ -244,7 +244,7 @@ html, body {
 
 .btn-fixed-end {
   background: rgba(255,255,255,0.05); color: var(--text-3); border: 1px solid var(--border); border-radius: 12px;
-  padding: 8px 12px; font-size: 13px; font-weight: 800; cursor:pointer; transition:all 0.2s;
+  height: 40px; padding: 0 12px; font-size: 13px; font-weight: 800; cursor:pointer; transition:all 0.2s;
   display: flex; align-items: center; justify-content: center; gap: 6px;
 }
 .btn-fixed-end i { width: 16px; height: 16px; }
@@ -372,8 +372,8 @@ html, body {
 .section-label-action { font-size:14px; font-weight:700; color:var(--text-2); cursor:pointer; padding:4px 8px; border-radius:12px; background:var(--bg-input); }
 
 /* UTIL BUTTONS (EDIT/DELETE) */
-.btn-util { width:32px; height:32px; border-radius:10px; border:none; background:var(--bg-input); color:var(--text-3); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; }
-.btn-util:active { transform:scale(0.9); }
+.btn-util { width:40px; height:40px; border-radius:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text-3); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.btn-util i { width:18px; height:18px; }
 .btn-util.edit:hover { color:var(--blue); }
 .btn-util.del:hover { color:var(--red); }
 .btn-util svg { width:16px; height:16px; }
