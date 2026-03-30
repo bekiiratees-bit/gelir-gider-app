@@ -571,30 +571,48 @@ function renderFixed() {
       displayAmount += interestAdded;
     }
 
-    return `<div class="ultra-plan-card" style="cursor:pointer; ${isPaidThisMonth ? 'border:1px solid var(--green); background:rgba(0,214,143,0.05)' : ''}" onclick="openEditFixed('${f.id}')">
-      <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-        <div class="tx-avatar" style="width:44px; height:44px; flex-shrink:0; border-radius:14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
-          ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px;color:${cat.color}"></i>`}
+    return `<div class="ultra-plan-card" style="cursor:pointer; ${isPaidThisMonth ? 'border:1px solid var(--green); background:rgba(0,214,143,0.08)' : ''}" onclick="openEditFixed('${f.id}')">
+      <!-- HEADER: AVATAR & NAME -->
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div class="tx-avatar" style="width:54px; height:54px; flex-shrink:0; border-radius:18px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); box-shadow:0 8px 16px rgba(0,0,0,0.2);">
+          ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:16px">` : `<i data-lucide="${cat.icon}" style="width:24px;height:24px;color:${cat.color}"></i>`}
         </div>
-        
-        <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; padding: 2px 0;">
-          <div style="font-weight:900; font-size:15px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.4;">${f.name}</div>
-          <div style="font-size:11px; color:var(--text-3); font-weight:800; text-transform:uppercase; margin-top:6px; display:flex; justify-content:space-between; align-items:center; opacity:0.8; letter-spacing:0.3px;">
-            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%;">${cat.name}</span>
-            <span style="flex-shrink:0; margin-left:8px; opacity:0.5; font-size:10px;">${f.payDay}. GÜN</span>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:900; font-size:18px; color:var(--text-1); line-height:1.2; letter-spacing:-0.5px;">${f.name}</div>
+          <div style="font-size:12px; color:var(--text-3); font-weight:800; text-transform:uppercase; margin-top:4px; opacity:0.6;">SABİT ÖDEME PLANI</div>
+        </div>
+      </div>
+
+      <!-- BODY: DETAILS & AMOUNT -->
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 4px 0;">
+        <div style="flex:1;">
+          <div style="font-size:13px; color:var(--text-2); font-weight:800; display:flex; align-items:center; gap:6px;">
+            <span style="color:${cat.color}">${cat.name}</span>
+            <span style="opacity:0.2">|</span>
+            <span style="color:var(--text-3)">${f.payDay}. GÜN</span>
           </div>
-          ${interestAdded > 0 ? `<div class="interest-text" style="font-size:10px; margin-top:4px;"><i data-lucide="trending-up" style="width:11px; height:11px;"></i> +₺${interestAdded.toFixed(2)}</div>` : ''}
+          ${interestAdded > 0 ? `<div style="font-size:11px; color:var(--red); font-weight:800; margin-top:6px; display:flex; align-items:center; gap:4px;"><i data-lucide="trending-up" style="width:12px; height:12px;"></i> +₺${interestAdded.toFixed(2)} Gecikme</div>` : ''}
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:900; font-size:22px; color:var(--text-1); letter-spacing:-1px;">₺${displayAmount.toLocaleString()}</div>
+          ${f.totalDebt ? `<div style="font-size:11px; font-weight:900; color:#ff9f43; margin-top:2px;">TOPLAM BORÇ: ₺${fmtShort(f.totalDebt)}</div>` : ''}
         </div>
       </div>
 
-      <div style="display:flex; flex-direction:column; align-items:flex-end; margin: 0 10px; flex-shrink:0;">
-        <div style="font-weight:900; font-size:16px; color:var(--text-1)">₺${displayAmount.toLocaleString()}</div>
-        ${f.totalDebt ? `<div style="font-size:9px; font-weight:800; color:#ff9f43; margin-top:1px;">BORÇ: ₺${fmtShort(f.totalDebt)}</div>` : ''}
-      </div>
-
-      <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-        ${!isPaidThisMonth ? `<button class="btn-util" onclick="event.stopPropagation(); markFixedPaid('${f.id}')" style="color:var(--green); background:rgba(0,214,143,0.1); border:1px solid rgba(0,214,143,0.2);"><i data-lucide="check"></i></button>` : '<div class="fixed-paid-badge" style="padding:10px; background:var(--green)20; border-radius:12px;"><i data-lucide="check-circle" style="width:18px; height:18px; color:var(--green)"></i></div>'}
-        <button class="btn-fixed-end" onclick="event.stopPropagation(); endFixedPayment('${f.id}')" style="width:40px; height:40px; padding:0;"><i data-lucide="x-circle"></i></button>
+      <!-- FOOTER: ACTIONS -->
+      <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05);">
+        ${!isPaidThisMonth ? `
+          <button class="btn-fixed-end" onclick="event.stopPropagation(); markFixedPaid('${f.id}')" style="background:var(--green); color:white; border:none; flex:1; height:44px; font-size:14px;">
+            <i data-lucide="check-circle"></i> Ödeme Sağlandı
+          </button>
+        ` : `
+          <div style="flex:1; height:44px; display:flex; align-items:center; justify-content:center; gap:8px; background:rgba(0,214,143,0.1); color:var(--green); border-radius:12px; font-weight:900; font-size:13px;">
+            <i data-lucide="shield-check" style="width:18px; height:18px;"></i> BU AY ŞEVKLENDİ
+          </div>
+        `}
+        <button class="btn-util" onclick="event.stopPropagation(); endFixedPayment('${f.id}')" style="width:44px; height:44px; background:rgba(255,61,113,0.1); color:var(--red); border:1px solid rgba(255,61,113,0.2);">
+          <i data-lucide="trash-2"></i>
+        </button>
       </div>
     </div>`;
   }).join('') || '<div class="empty-state">Sabit ödeme yok</div>';
