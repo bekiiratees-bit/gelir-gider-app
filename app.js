@@ -577,12 +577,12 @@ function renderFixed() {
           ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px;color:${cat.color}"></i>`}
         </div>
         
-        <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center;">
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; padding: 4px 0;">
           <div style="font-weight:900; font-size:15px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${f.name}</div>
-          <div style="font-size:11px; color:var(--text-3); font-weight:800; text-transform:uppercase; margin-top:4px; opacity:0.8; letter-spacing:0.2px;">
+          <div style="font-size:11px; color:var(--text-3); font-weight:800; text-transform:uppercase; margin-top:8px; opacity:0.8; letter-spacing:0.3px; line-height:1;">
             ${cat.name} <span style="margin:0 4px;opacity:0.3">|</span> ${f.payDay}. GÜN
           </div>
-          ${interestAdded > 0 ? `<div class="interest-text" style="font-size:10px; margin-top:3px;"><i data-lucide="trending-up" style="width:11px; height:11px;"></i> +₺${interestAdded.toFixed(2)}</div>` : ''}
+          ${interestAdded > 0 ? `<div class="interest-text" style="font-size:10px; margin-top:4px;"><i data-lucide="trending-up" style="width:11px; height:11px;"></i> +₺${interestAdded.toFixed(2)}</div>` : ''}
         </div>
       </div>
 
