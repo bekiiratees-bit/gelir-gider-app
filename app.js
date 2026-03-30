@@ -544,6 +544,20 @@ function renderTransactions() {
   refreshIcons();
 }
 
+function migrateFixedExpenses() {
+  if (!state.fixedExpenses) return;
+  state.fixedExpenses.forEach(f => {
+    if (!f.payments) f.payments = {};
+    if (f.paidMonths && f.paidMonths.length > 0) {
+      f.paidMonths.forEach(m => {
+        if (!f.payments[m]) f.payments[m] = f.amount;
+      });
+      delete f.paidMonths;
+    }
+  });
+}
+migrateFixedExpenses();
+
 function renderFixed() {
   const el = document.getElementById('fixed-list');
   const fixTotEl = document.getElementById('fixed-total');
@@ -557,72 +571,120 @@ function renderFixed() {
   const currentMonthYear = now.toISOString().slice(0, 7);
   const currentDay = now.getDate();
 
-  el.innerHTML = activeFixed.map(f => {
+  let html = '';
+
+  activeFixed.forEach(f => {
     const cat = getCatById(f.categoryId);
-    const monthsDiff = getMonthsDiff(f.startDate || today(), today());
-    const isPaidThisMonth = f.paidMonths && f.paidMonths.includes(currentMonthYear);
-    
-    let displayAmount = f.amount;
-    let interestAdded = 0;
-    
-    if (f.dailyInterest && currentDay > f.payDay && !isPaidThisMonth) {
-      const daysOverdue = currentDay - f.payDay;
-      interestAdded = f.amount * (f.dailyInterest / 100) * daysOverdue;
-      displayAmount += interestAdded;
+    const startDate = f.startDate || '2024-01-01';
+    const startObj = new Date(startDate);
+    const endObj = new Date(currentMonthYear + '-01');
+
+    // Iterate through all months from startDate to Current Selection
+    let iter = new Date(startObj.getFullYear(), startObj.getMonth(), 1);
+    while (iter <= endObj) {
+      const iterStr = iter.toISOString().slice(0, 7);
+      const isCurrentInstance = (iterStr === currentMonthYear);
+      const paidAmt = (f.payments && f.payments[iterStr]) || 0;
+      
+      let expectedAmount = f.amount;
+      let interestAdded = 0;
+      // Add interest only if it's the current month AND past due day, OR if it's a past month
+      if (f.dailyInterest) {
+        if (isCurrentInstance && currentDay > f.payDay && paidAmt < expectedAmount) {
+          interestAdded = expectedAmount * (f.dailyInterest / 100) * (currentDay - f.payDay);
+        } else if (iter < endObj && paidAmt < expectedAmount) {
+          interestAdded = expectedAmount * (f.dailyInterest / 100) * 30; // Approximated for past months
+        }
+      }
+      const totalRequired = expectedAmount + interestAdded;
+      const isFullyPaid = paidAmt >= totalRequired;
+
+      if (!isFullyPaid) {
+        const remaining = totalRequired - paidAmt;
+        const progress = (paidAmt / totalRequired) * 100;
+        const isOverdue = !isCurrentInstance;
+        const monthLabel = iter.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+
+        html += `<div class="ultra-plan-card ${isOverdue ? 'overdue' : ''}" style="cursor:pointer;" onclick="openEditFixed('${f.id}')">
+          <!-- HEADER -->
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div class="tx-avatar" style="width:54px; height:54px; flex-shrink:0; border-radius:18px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
+              ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:16px">` : `<i data-lucide="${cat.icon}" style="width:24px;height:24px;color:${cat.color}"></i>`}
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:900; font-size:18px; color:var(--text-1); line-height:1.2;">${f.name}</div>
+              <div style="font-size:11px; color:#fff; font-weight:900; background:${isOverdue ? 'var(--red)' : 'var(--blue)'}; display:inline-block; padding:2px 8px; border-radius:6px; margin-top:4px;">
+                ${isOverdue ? 'GECİKMİŞ: ' + monthLabel : 'BU AYIN ÖDEMESİ'}
+              </div>
+            </div>
+          </div>
+
+          <!-- BODY -->
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:12px;">
+            <div style="flex:1;">
+              <div style="font-size:13px; font-weight:800; color:var(--text-2);">${cat.name} <span style="opacity:0.3">|</span> ${f.payDay}. GÜN</div>
+              <div class="payment-progress">
+                <div class="payment-progress-bar" style="width:${progress}%"></div>
+              </div>
+              <div style="font-size:11px; margin-top:4px; font-weight:800; color:var(--text-3)">₺${paidAmt.toLocaleString()} / ₺${totalRequired.toLocaleString()} Ödendi</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:900; font-size:22px; color:var(--text-1)">₺${remaining.toLocaleString()}</div>
+              <div style="font-size:10px; font-weight:800; color:var(--text-3)">KALAN BORÇ</div>
+            </div>
+          </div>
+
+          <!-- FOOTER -->
+          <div style="display:flex; align-items:center; gap:10px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05);">
+            <button class="btn-fixed-end" onclick="event.stopPropagation(); quickPayFixed('${f.id}', '${iterStr}', ${remaining})" style="background:var(--green); color:white; border:none; flex:1; height:44px; font-size:14px;">
+              <i data-lucide="wallet"></i> Ödeme Yap (Kısmi/Tam)
+            </button>
+            <button class="btn-util" onclick="event.stopPropagation(); endFixedPayment('${f.id}')" style="width:44px; height:44px; background:rgba(255,61,113,0.1); color:var(--red); border:1px solid rgba(255,61,113,0.2);">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
+        </div>`;
+      }
+      iter.setMonth(iter.getMonth() + 1);
     }
+  });
 
-    return `<div class="ultra-plan-card" style="cursor:pointer; ${isPaidThisMonth ? 'border:1px solid var(--green); background:rgba(0,214,143,0.08)' : ''}" onclick="openEditFixed('${f.id}')">
-      <!-- HEADER: AVATAR & NAME -->
-      <div style="display:flex; align-items:center; gap:16px;">
-        <div class="tx-avatar" style="width:54px; height:54px; flex-shrink:0; border-radius:18px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); box-shadow:0 8px 16px rgba(0,0,0,0.2);">
-          ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:16px">` : `<i data-lucide="${cat.icon}" style="width:24px;height:24px;color:${cat.color}"></i>`}
-        </div>
-        <div style="flex:1; min-width:0;">
-          <div style="font-weight:900; font-size:18px; color:var(--text-1); line-height:1.2; letter-spacing:-0.5px;">${f.name}</div>
-          <div style="font-size:12px; color:var(--text-3); font-weight:800; text-transform:uppercase; margin-top:4px; opacity:0.6;">SABİT ÖDEME PLANI</div>
-        </div>
-      </div>
+  el.innerHTML = html || '<div class="empty-state">Bu ay için bekleyen ödeme yok</div>';
 
-      <!-- BODY: DETAILS & AMOUNT -->
-      <div style="display:flex; justify-content:space-between; align-items:flex-end; padding: 4px 0;">
-        <div style="flex:1;">
-          <div style="font-size:13px; color:var(--text-2); font-weight:800; display:flex; align-items:center; gap:6px;">
-            <span style="color:${cat.color}">${cat.name}</span>
-            <span style="opacity:0.2">|</span>
-            <span style="color:var(--text-3)">${f.payDay}. GÜN</span>
-          </div>
-          ${interestAdded > 0 ? `<div style="font-size:11px; color:var(--red); font-weight:800; margin-top:6px; display:flex; align-items:center; gap:4px;"><i data-lucide="trending-up" style="width:12px; height:12px;"></i> +₺${interestAdded.toFixed(2)} Gecikme</div>` : ''}
-        </div>
-        <div style="text-align:right;">
-          <div style="font-weight:900; font-size:22px; color:var(--text-1); letter-spacing:-1px;">₺${displayAmount.toLocaleString()}</div>
-          ${f.totalDebt ? `<div style="font-size:11px; font-weight:900; color:#ff9f43; margin-top:2px;">TOPLAM BORÇ: ₺${fmtShort(f.totalDebt)}</div>` : ''}
-        </div>
-      </div>
-
-      <!-- FOOTER: ACTIONS -->
-      <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05);">
-        ${!isPaidThisMonth ? `
-          <button class="btn-fixed-end" onclick="event.stopPropagation(); markFixedPaid('${f.id}')" style="background:var(--green); color:white; border:none; flex:1; height:44px; font-size:14px;">
-            <i data-lucide="check-circle"></i> Ödeme Sağlandı
-          </button>
-        ` : `
-          <div style="flex:1; height:44px; display:flex; align-items:center; justify-content:center; gap:8px; background:rgba(0,214,143,0.1); color:var(--green); border-radius:12px; font-weight:900; font-size:13px;">
-            <i data-lucide="shield-check" style="width:18px; height:18px;"></i> BU AY ŞEVKLENDİ
-          </div>
-        `}
-        <button class="btn-util" onclick="event.stopPropagation(); endFixedPayment('${f.id}')" style="width:44px; height:44px; background:rgba(255,61,113,0.1); color:var(--red); border:1px solid rgba(255,61,113,0.2);">
-          <i data-lucide="trash-2"></i>
-        </button>
-      </div>
-    </div>`;
-  }).join('') || '<div class="empty-state">Sabit ödeme yok</div>';
-  
   const catMap = {};
   activeFixed.forEach(f => { catMap[f.categoryId] = (catMap[f.categoryId]||0) + f.amount; });
   const chartEl = document.getElementById('fixed-chart');
   if (chartEl && Object.keys(catMap).length > 0) {
     drawBarChart(chartEl, Object.keys(catMap).map(id => getCatById(id).name), Object.values(catMap).map(()=>0), Object.values(catMap));
   }
+  refreshIcons();
+}
+
+function quickPayFixed(id, monthStr, remaining) {
+  const amount = prompt(`${monthStr} ayı için ödeme tutarını giriniz:`, remaining);
+  if (!amount || isNaN(amount) || amount <= 0) return;
+  
+  const f = state.fixedExpenses.find(x => x.id === id);
+  if (!f) return;
+  
+  if (!f.payments) f.payments = {};
+  f.payments[monthStr] = (f.payments[monthStr] || 0) + parseFloat(amount);
+  
+  // Create transaction
+  const cat = getCatById(f.categoryId);
+  state.transactions.push({
+    id: generateId(),
+    date: today(),
+    amount: parseFloat(amount),
+    categoryId: f.categoryId,
+    note: `${f.name} - ${monthStr} Ödemesi`,
+    type: 'expense'
+  });
+
+  saveState();
+  renderFixed();
+  renderHome();
+  showToast('Ödeme başarıyla kaydedildi');
 }
 
 function renderHomeFixed() {
