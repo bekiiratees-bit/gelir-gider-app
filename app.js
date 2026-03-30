@@ -605,7 +605,7 @@ function renderFixed() {
         const isOverdue = !isCurrentInstance;
         const monthLabel = iter.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
 
-        html += `<div class="ultra-plan-card ${isOverdue ? 'overdue' : ''}" style="cursor:pointer;" onclick="openEditFixed('${f.id}')">
+        html += `<div class="fixed-ultra-card ${isOverdue ? 'overdue' : ''}" style="cursor:pointer;" onclick="openEditFixed('${f.id}')">
           <!-- HEADER -->
           <div style="display:flex; align-items:center; gap:16px;">
             <div class="tx-avatar" style="width:54px; height:54px; flex-shrink:0; border-radius:18px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
@@ -658,6 +658,40 @@ function renderFixed() {
     drawBarChart(chartEl, Object.keys(catMap).map(id => getCatById(id).name), Object.values(catMap).map(()=>0), Object.values(catMap));
   }
   refreshIcons();
+}
+
+function rollbackLastFixedPayment() {
+  // Find the last transaction that is a fixed payment
+  const lastIdx = [...state.transactions].reverse().findIndex(t => t.note && t.note.includes(' - ') && t.note.includes(' Ödemesi'));
+  if (lastIdx === -1) {
+    showToast('Geri alınacak ödeme kaydı bulunamadı.');
+    return;
+  }
+  
+  const actualIdx = state.transactions.length - 1 - lastIdx;
+  const tx = state.transactions[actualIdx];
+  const [fixedName, monthPart] = tx.note.split(' - ');
+  const monthStr = monthPart.split(' ')[0]; // Extract YYYY-MM
+  
+  const f = state.fixedExpenses.find(x => x.name === fixedName);
+  if (!f || !f.payments || !f.payments[monthStr]) {
+    showToast('Ödeme asıl kayıtta bulunamadı.');
+    return;
+  }
+  
+  if (!confirm(`${fixedName} için yapılan ₺${tx.amount} tutarındaki ödeme geri alınsın mı?`)) return;
+
+  // Deduct from payments
+  f.payments[monthStr] -= tx.amount;
+  if (f.payments[monthStr] <= 0) delete f.payments[monthStr];
+  
+  // Remove transaction
+  state.transactions.splice(actualIdx, 1);
+  
+  saveState();
+  renderFixed();
+  renderHome();
+  showToast('Ödeme başarıyla geri alındı');
 }
 
 function quickPayFixed(id, monthStr, remaining) {
