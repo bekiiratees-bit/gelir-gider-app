@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gelir-gider-v1.3.0';
+const CACHE_NAME = 'gelir-gider-v1.4.0';
 const ASSETS = [
   './index.html',
   './styles.css',
@@ -27,8 +27,10 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request).then((res) => {
-      return res || fetch(e.request).catch(() => caches.match('./index.html'));
+    fetch(e.request).catch(() => {
+      return caches.match(e.request).then((res) => {
+        return res || caches.match('./index.html');
+      });
     })
   );
 });
