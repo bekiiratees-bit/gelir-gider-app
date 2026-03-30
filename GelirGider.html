@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.9.1">
+<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.9.2">
 <meta name="theme-color" content="#07070f">
 <title>Gelir·Gider – Bekir ATEŞ</title>
 <style>
@@ -226,6 +226,28 @@ html, body {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, rgba(182, 33, 255, 0.3), transparent);
 }
+
+/* HORIZONTAL SCROLL CARDS */
+.cat-insight-scroll {
+  display: flex; gap: 12px; overflow-x: auto; padding: 4px 0 16px 0;
+  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+}
+.cat-insight-scroll::-webkit-scrollbar { display: none; }
+
+.cat-insight-card {
+  flex: 0 0 140px; scroll-snap-align: start; min-height: 140px;
+  border-radius: 24px; padding: 16px; display: flex; flex-direction: column;
+  justify-content: flex-start; position: relative; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1); transition: transform 0.2s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.cat-insight-card:active { transform: scale(0.96); }
+.cat-insight-card .cat-icon {
+  width: 32px; height: 32px; border-radius: 10px; background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 12px;
+}
+.cat-insight-card .cat-name { font-size: 11px; font-weight: 800; text-transform: uppercase; opacity: 0.8; color: #fff; letter-spacing: 0.5px; }
+.cat-insight-card .cat-value { font-size: 19px; font-weight: 1000; color: #fff; margin-top: 8px; letter-spacing: -0.5px; }
 
 .plan-date-viz {
   font-size: 9px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px;
@@ -823,6 +845,7 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
     <div class="card">
       <div class="card-header"><span class="card-label">Sabit Gider Dağılımı</span></div>
       <canvas id="fixed-chart" style="height:120px"></canvas>
+      <div id="fixed-cat-legend" style="margin-top:10px"></div>
     </div>
     <div id="fixed-list"></div>
     <div class="license">License: BekirAtes</div>
@@ -1256,6 +1279,33 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
 </div>
 
 <!-- CATEGORY DETAIL MODAL -->
+<!-- ━━━━━━━━━━━━━━━ MODAL: PAY FIXED (PREMIUM) ━━━━━━━━━━━━━━━ -->
+<div class="modal-overlay" id="modal-pay-fixed" onclick="if(event.target===this)closeModal('modal-pay-fixed')">
+  <div class="modal-content" style="max-width:380px;">
+    <h3 style="margin-bottom:16px; display:flex; align-items:center; gap:10px;"><i data-lucide="wallet" style="color:var(--green)"></i> Ödeme Yap</h3>
+    <div id="pay-fixed-context" style="margin-bottom:20px; padding:16px; background:rgba(255,255,255,0.03); border-radius:16px; border:1px solid rgba(255,255,255,0.05);">
+       <div id="pay-fixed-name" style="font-weight:900; font-size:18px; color:var(--text-1)">-</div>
+       <div id="pay-fixed-month" style="font-size:12px; font-weight:800; color:var(--text-3); text-transform:uppercase; margin-top:4px;">-</div>
+    </div>
+    
+    <label class="input-label" style="display:flex; justify-content:space-between; align-items:center;">
+      Ödenecek Tutar 
+      <span id="pay-fixed-remaining" style="font-size:11px; color:var(--green); font-weight:900;">KALAN: ₺0</span>
+    </label>
+    <div style="position:relative; margin-bottom:24px;">
+      <span style="position:absolute; left:16px; top:50%; transform:translateY(-50%); font-weight:900; color:var(--text-3); font-size:24px;">₺</span>
+      <input type="number" id="pay-fixed-input" placeholder="0.00" step="0.01" style="padding-left:40px; font-size:32px; font-weight:900; height:70px; background:rgba(255,255,255,0.02); color:white; border-radius:16px; border:1px solid rgba(255,255,255,0.1); width:100%; box-sizing:border-box;">
+    </div>
+
+    <button class="btn btn-primary" id="btn-pay-confirm" onclick="confirmFixedPayment()" style="background:var(--green); height:56px; font-size:16px; width:100%; border:none; border-radius:16px; color:white; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
+      <i data-lucide="shield-check"></i> Ödemeyi Tamamla
+    </button>
+    <button class="btn-ghost" onclick="closeModal('modal-pay-fixed')" style="width:100%; margin-top:12px;">
+      <i data-lucide="x" style="stroke-width:2"></i> Vazgeç
+    </button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-cat-detail" onclick="if(event.target===this)closeModal('modal-cat-detail')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -1264,7 +1314,7 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
     <button class="btn-ghost" onclick="closeModal('modal-cat-detail')">
       <i data-lucide="x" style="stroke-width:2"></i> Kapat
     </button>
-    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.9.1 • Bekir ATEŞ</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.9.2 • Bekir ATEŞ</div>
   </div>
 </div>
 </div>
@@ -1437,13 +1487,16 @@ function drawDonut(canvas, data, colors) {
 function drawBarChart(canvas, labels, incomes, expenses) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
   const W = canvas.offsetWidth || 300; const H = 150;
-  canvas.width = W; canvas.height = H;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
   ctx.clearRect(0,0,W,H);
   const n = labels.length;
   if (n === 0) return;
   const max = Math.max(...incomes, ...expenses, 1);
-  const bw = (W / n) * 0.22; // thinner bars
+  const bw = (W / n) * 0.22;
   const gap = (W / n) * 0.08;
   const padX = (W/n - bw*2 - gap) / 2;
   
@@ -1491,8 +1544,11 @@ function drawBarChart(canvas, labels, incomes, expenses) {
 function drawLineChart(canvas, labels, values, color) {
   if (!canvas || values.length === 0) return;
   const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
   const W = canvas.offsetWidth || 300; const H = 100;
-  canvas.width = W; canvas.height = H;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
   ctx.clearRect(0,0,W,H);
   const max = Math.max(...values, 1) * 1.1; // 10% headroom
   const pts = values.map((v,i) => ({
@@ -1633,13 +1689,24 @@ function renderHome() {
     drawDonut(donutCanvas, catData.map(c=>c[1]), catData.map(c => getCatById(c[0]).color));
   }
 
-  // Donut legend
+  // Donut legend -> Horizontal Scroll Cards
   const legend = document.getElementById('donut-legend');
   if (legend) {
-    legend.innerHTML = catData.length ? catData.map(([cid, val]) => {
-      const cat = getCatById(cid);
-      return `<div class="pie-legend-item"><div class="pie-dot" style="background:${cat.color}"></div><span>${cat.name}: <b style="color:var(--text-1)">₺${fmtShort(val)}</b></span></div>`;
-    }).join('') : '<span style="color:var(--text-3);font-size:12px">Kayıt yok</span>';
+    legend.innerHTML = catData.length ? `
+      <div class="cat-insight-scroll">
+        ${catData.map(([cid, val]) => {
+          const cat = getCatById(cid);
+          const grad = `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}bb 100%)`;
+          return `
+            <div class="cat-insight-card" style="background:${grad}" onclick="openEditCat('${cat.id}')">
+              <div class="cat-icon"><i data-lucide="${cat.icon}" style="width:18px; height:18px; color:#fff;"></i></div>
+              <div class="cat-name">${cat.name}</div>
+              <div class="cat-value">₺${fmtShort(val)}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : '<span style="color:var(--text-3);font-size:12px">Kayıt yok</span>';
   }
 
   // Bar chart - monthly per last 6 months
@@ -1927,9 +1994,27 @@ function renderFixed() {
   const catMap = {};
   activeFixed.forEach(f => { catMap[f.categoryId] = (catMap[f.categoryId]||0) + f.amount; });
   const chartEl = document.getElementById('fixed-chart');
+  const legEl = document.getElementById('fixed-cat-legend');
   if (chartEl && Object.keys(catMap).length > 0) {
     drawBarChart(chartEl, Object.keys(catMap).map(id => getCatById(id).name), Object.values(catMap).map(()=>0), Object.values(catMap));
-  }
+    if (legEl) {
+      legEl.innerHTML = `
+        <div class="cat-insight-scroll">
+          ${Object.entries(catMap).map(([cid, val]) => {
+            const cat = getCatById(cid);
+            const grad = `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}bb 100%)`;
+            return `
+              <div class="cat-insight-card" style="background:${grad}" onclick="openEditCat('${cat.id}')">
+                <div class="cat-icon"><i data-lucide="${cat.icon}" style="width:18px; height:18px; color:#fff;"></i></div>
+                <div class="cat-name">${cat.name}</div>
+                <div class="cat-value">₺${fmtShort(val)}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+  } else if (legEl) { legEl.innerHTML = ''; }
   refreshIcons();
 }
 
@@ -1968,30 +2053,40 @@ function rollbackLastFixedPayment() {
 }
 
 function quickPayFixed(id, monthStr, remaining) {
-  const amount = prompt(`${monthStr} ayı için ödeme tutarını giriniz:`, remaining);
-  if (!amount || isNaN(amount) || amount <= 0) return;
-  
   const f = state.fixedExpenses.find(x => x.id === id);
   if (!f) return;
-  
+  document.getElementById('pay-fixed-name').textContent = f.name;
+  document.getElementById('pay-fixed-month').textContent = monthStr + ' DÖNEMİ';
+  document.getElementById('pay-fixed-remaining').textContent = 'KALAN: ₺' + remaining.toLocaleString();
+  const input = document.getElementById('pay-fixed-input');
+  input.value = remaining;
+  window._payContext = { id, monthStr, remaining };
+  openModal('modal-pay-fixed');
+}
+
+function confirmFixedPayment() {
+  const ctx = window._payContext;
+  if (!ctx) return;
+  const amount = parseFloat(document.getElementById('pay-fixed-input').value);
+  if (!amount || isNaN(amount) || amount <= 0) { showToast('Lütfen geçerli bir tutar giriniz'); return; }
+  const f = state.fixedExpenses.find(x => x.id === ctx.id);
+  if (!f) return;
   if (!f.payments) f.payments = {};
-  f.payments[monthStr] = (f.payments[monthStr] || 0) + parseFloat(amount);
-  
-  // Create transaction
-  const cat = getCatById(f.categoryId);
+  f.payments[ctx.monthStr] = (f.payments[ctx.monthStr] || 0) + amount;
   state.transactions.push({
     id: generateId(),
     date: today(),
-    amount: parseFloat(amount),
+    amount: amount,
     categoryId: f.categoryId,
-    note: `${f.name} - ${monthStr} Ödemesi`,
+    note: `${f.name} - ${ctx.monthStr} Ödemesi`,
     type: 'expense'
   });
-
   saveState();
+  closeModal('modal-pay-fixed');
   renderFixed();
   renderHome();
-  showToast('Ödeme başarıyla kaydedildi');
+  showToast('Ödeme kaydedildi');
+  delete window._payContext;
 }
 
 function renderHomeFixed() {
@@ -2689,7 +2784,7 @@ setInterval(() => {
 }, 2500);
 
 // Auto-reload on version change
-const VER = '1.9.1';
+const VER = '1.9.2';
 if (localStorage.getItem('app_v') !== VER) {
   localStorage.setItem('app_v', VER);
   window.location.reload(true);

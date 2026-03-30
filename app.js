@@ -164,13 +164,16 @@ function drawDonut(canvas, data, colors) {
 function drawBarChart(canvas, labels, incomes, expenses) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
   const W = canvas.offsetWidth || 300; const H = 150;
-  canvas.width = W; canvas.height = H;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
   ctx.clearRect(0,0,W,H);
   const n = labels.length;
   if (n === 0) return;
   const max = Math.max(...incomes, ...expenses, 1);
-  const bw = (W / n) * 0.22; // thinner bars
+  const bw = (W / n) * 0.22;
   const gap = (W / n) * 0.08;
   const padX = (W/n - bw*2 - gap) / 2;
   
@@ -218,8 +221,11 @@ function drawBarChart(canvas, labels, incomes, expenses) {
 function drawLineChart(canvas, labels, values, color) {
   if (!canvas || values.length === 0) return;
   const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
   const W = canvas.offsetWidth || 300; const H = 100;
-  canvas.width = W; canvas.height = H;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
   ctx.clearRect(0,0,W,H);
   const max = Math.max(...values, 1) * 1.1; // 10% headroom
   const pts = values.map((v,i) => ({
@@ -360,13 +366,24 @@ function renderHome() {
     drawDonut(donutCanvas, catData.map(c=>c[1]), catData.map(c => getCatById(c[0]).color));
   }
 
-  // Donut legend
+  // Donut legend -> Horizontal Scroll Cards
   const legend = document.getElementById('donut-legend');
   if (legend) {
-    legend.innerHTML = catData.length ? catData.map(([cid, val]) => {
-      const cat = getCatById(cid);
-      return `<div class="pie-legend-item"><div class="pie-dot" style="background:${cat.color}"></div><span>${cat.name}: <b style="color:var(--text-1)">₺${fmtShort(val)}</b></span></div>`;
-    }).join('') : '<span style="color:var(--text-3);font-size:12px">Kayıt yok</span>';
+    legend.innerHTML = catData.length ? `
+      <div class="cat-insight-scroll">
+        ${catData.map(([cid, val]) => {
+          const cat = getCatById(cid);
+          const grad = `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}bb 100%)`;
+          return `
+            <div class="cat-insight-card" style="background:${grad}" onclick="openEditCat('${cat.id}')">
+              <div class="cat-icon"><i data-lucide="${cat.icon}" style="width:18px; height:18px; color:#fff;"></i></div>
+              <div class="cat-name">${cat.name}</div>
+              <div class="cat-value">₺${fmtShort(val)}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : '<span style="color:var(--text-3);font-size:12px">Kayıt yok</span>';
   }
 
   // Bar chart - monthly per last 6 months
@@ -654,9 +671,27 @@ function renderFixed() {
   const catMap = {};
   activeFixed.forEach(f => { catMap[f.categoryId] = (catMap[f.categoryId]||0) + f.amount; });
   const chartEl = document.getElementById('fixed-chart');
+  const legEl = document.getElementById('fixed-cat-legend');
   if (chartEl && Object.keys(catMap).length > 0) {
     drawBarChart(chartEl, Object.keys(catMap).map(id => getCatById(id).name), Object.values(catMap).map(()=>0), Object.values(catMap));
-  }
+    if (legEl) {
+      legEl.innerHTML = `
+        <div class="cat-insight-scroll">
+          ${Object.entries(catMap).map(([cid, val]) => {
+            const cat = getCatById(cid);
+            const grad = `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}bb 100%)`;
+            return `
+              <div class="cat-insight-card" style="background:${grad}" onclick="openEditCat('${cat.id}')">
+                <div class="cat-icon"><i data-lucide="${cat.icon}" style="width:18px; height:18px; color:#fff;"></i></div>
+                <div class="cat-name">${cat.name}</div>
+                <div class="cat-value">₺${fmtShort(val)}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+  } else if (legEl) { legEl.innerHTML = ''; }
   refreshIcons();
 }
 
@@ -695,30 +730,40 @@ function rollbackLastFixedPayment() {
 }
 
 function quickPayFixed(id, monthStr, remaining) {
-  const amount = prompt(`${monthStr} ayı için ödeme tutarını giriniz:`, remaining);
-  if (!amount || isNaN(amount) || amount <= 0) return;
-  
   const f = state.fixedExpenses.find(x => x.id === id);
   if (!f) return;
-  
+  document.getElementById('pay-fixed-name').textContent = f.name;
+  document.getElementById('pay-fixed-month').textContent = monthStr + ' DÖNEMİ';
+  document.getElementById('pay-fixed-remaining').textContent = 'KALAN: ₺' + remaining.toLocaleString();
+  const input = document.getElementById('pay-fixed-input');
+  input.value = remaining;
+  window._payContext = { id, monthStr, remaining };
+  openModal('modal-pay-fixed');
+}
+
+function confirmFixedPayment() {
+  const ctx = window._payContext;
+  if (!ctx) return;
+  const amount = parseFloat(document.getElementById('pay-fixed-input').value);
+  if (!amount || isNaN(amount) || amount <= 0) { showToast('Lütfen geçerli bir tutar giriniz'); return; }
+  const f = state.fixedExpenses.find(x => x.id === ctx.id);
+  if (!f) return;
   if (!f.payments) f.payments = {};
-  f.payments[monthStr] = (f.payments[monthStr] || 0) + parseFloat(amount);
-  
-  // Create transaction
-  const cat = getCatById(f.categoryId);
+  f.payments[ctx.monthStr] = (f.payments[ctx.monthStr] || 0) + amount;
   state.transactions.push({
     id: generateId(),
     date: today(),
-    amount: parseFloat(amount),
+    amount: amount,
     categoryId: f.categoryId,
-    note: `${f.name} - ${monthStr} Ödemesi`,
+    note: `${f.name} - ${ctx.monthStr} Ödemesi`,
     type: 'expense'
   });
-
   saveState();
+  closeModal('modal-pay-fixed');
   renderFixed();
   renderHome();
-  showToast('Ödeme başarıyla kaydedildi');
+  showToast('Ödeme kaydedildi');
+  delete window._payContext;
 }
 
 function renderHomeFixed() {
