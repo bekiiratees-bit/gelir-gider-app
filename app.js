@@ -881,29 +881,29 @@ function renderPlanning() {
     const isTomorrow = diff === 1;
     const isWarning = diff <= 1;
 
-    return `<div class="card ${isWarning ? 'pulse-glow' : ''}" style="margin-bottom:20px; padding:24px; border-radius: 28px; background: var(--bg-card); border: 1px solid var(--border); box-shadow: 0 12px 40px rgba(0,0,0,0.15);">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <div class="plan-badge-premium">
-          <i data-lucide="calendar"></i>
+    return `<div class="ultra-plan-card ${diff <= 1 ? 'urgent plan-neon-red' : 'plan-neon-green'}">
+      <div class="plan-header-row">
+        <div class="plan-date-viz">
+          <i data-lucide="calendar" style="width:14px; height:14px;"></i>
           <span>${p.isRecurring ? `Her ayın ${new Date(p.dueDate).getDate()}. günü` : formatDate(p.dueDate)}</span>
         </div>
-        <div class="plan-rem-pill-premium ${diff > 1 ? 'green' : 'pulse-glow'}">
-          <i data-lucide="${isToday ? 'alert-circle' : 'clock'}"></i>
-          <span>${isToday ? 'Bugün!' : isTomorrow ? 'Yarın!' : diff + ' gün kaldı'}</span>
+        <div class="plan-countdown-viz">
+          <div class="countdown-num">${isToday ? '0' : diff}</div>
+          <div class="countdown-label">${isToday ? 'BUGÜN' : 'GÜN KALDI'}</div>
         </div>
       </div>
       
-      <div style="display:flex;align-items:center;gap:18px;">
-        <div class="tx-avatar" style="width:60px; height:60px; border-radius:20px; background:${cat.color}15; color:${cat.color}; border: 1px solid ${cat.color}30;">
-          ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:18px">` : `<i data-lucide="${cat.icon}" style="width:28px;height:28px"></i>`}
+      <div style="display:flex;align-items:center;gap:20px;">
+        <div class="tx-avatar" style="width:64px; height:64px; border-radius:22px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
+          ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:20px">` : `<i data-lucide="${cat.icon}" style="width:28px;height:28px; color:${cat.color}; filter: drop-shadow(0 0 8px ${cat.color}60);"></i>`}
         </div>
         <div style="flex:1">
-          <div style="font-weight:900; font-size:20px; color:var(--text-1); letter-spacing:-0.8px; margin-bottom:4px;">${p.name}</div>
-          <div style="font-size:14px; color:var(--text-3); font-weight:700; display:flex; align-items:center; gap:6px;">
-            <span style="width:8px; height:8px; border-radius:50%; background:${cat.color}"></span> ${cat.name}
+          <div style="font-weight:900; font-size:22px; color:var(--text-1); letter-spacing:-1px; margin-bottom:4px;">${p.name}</div>
+          <div style="font-size:13px; color:var(--text-3); font-weight:800; text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
+            <span style="width:8px; height:8px; border-radius:50%; background:${cat.color}; box-shadow:0 0 10px ${cat.color};"></span> ${cat.name}
           </div>
         </div>
-        <button class="btn-util edit" onclick="openEditPlanning('${p.id}')" style="width:44px; height:44px; border-radius:14px;">
+        <button class="btn-util edit" onclick="openEditPlanning('${p.id}')" style="width:48px; height:48px; border-radius:16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
           <i data-lucide="pencil-line" style="width:22px; height:22px;"></i>
         </button>
       </div>
