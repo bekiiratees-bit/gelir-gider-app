@@ -579,8 +579,10 @@ function renderFixed() {
         
         <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center;">
           <div style="font-weight:900; font-size:15px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${f.name}</div>
-          <div style="font-size:10px; color:var(--text-3); font-weight:800; text-transform:uppercase; margin-top:2px;">${cat.name} • ${f.payDay}. GÜN</div>
-          ${interestAdded > 0 ? `<div class="interest-text" style="font-size:9px; margin-top:2px;"><i data-lucide="trending-up" style="width:10px; height:10px;"></i> +₺${interestAdded.toFixed(2)}</div>` : ''}
+          <div style="font-size:11px; color:var(--text-3); font-weight:800; text-transform:uppercase; margin-top:4px; opacity:0.8; letter-spacing:0.2px;">
+            ${cat.name} <span style="margin:0 4px;opacity:0.3">|</span> ${f.payDay}. GÜN
+          </div>
+          ${interestAdded > 0 ? `<div class="interest-text" style="font-size:10px; margin-top:3px;"><i data-lucide="trending-up" style="width:11px; height:11px;"></i> +₺${interestAdded.toFixed(2)}</div>` : ''}
         </div>
       </div>
 
