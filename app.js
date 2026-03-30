@@ -881,29 +881,31 @@ function renderPlanning() {
     const isTomorrow = diff === 1;
     const isWarning = diff <= 1;
 
-    return `<div class="card ${isWarning ? 'warning-blink' : ''}" style="${isWarning?'border:2.5px solid var(--red)':''}; margin-bottom:16px; padding:20px;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
-        <div class="plan-badge">
+    return `<div class="card ${isWarning ? 'pulse-glow' : ''}" style="margin-bottom:20px; padding:24px; border-radius: 28px; background: var(--bg-card); border: 1px solid var(--border); box-shadow: 0 12px 40px rgba(0,0,0,0.15);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div class="plan-badge-premium">
           <i data-lucide="calendar"></i>
           <span>${p.isRecurring ? `Her ayın ${new Date(p.dueDate).getDate()}. günü` : formatDate(p.dueDate)}</span>
         </div>
-        <div class="plan-rem-pill ${diff > 1 ? 'green' : ''}">
-          <i data-lucide="clock"></i>
+        <div class="plan-rem-pill-premium ${diff > 1 ? 'green' : 'pulse-glow'}">
+          <i data-lucide="${isToday ? 'alert-circle' : 'clock'}"></i>
           <span>${isToday ? 'Bugün!' : isTomorrow ? 'Yarın!' : diff + ' gün kaldı'}</span>
         </div>
       </div>
       
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="tx-avatar" style="width:52px; height:52px; background:${cat.color}25;color:${cat.color}">
-          ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:24px;height:24px"></i>`}
+      <div style="display:flex;align-items:center;gap:18px;">
+        <div class="tx-avatar" style="width:60px; height:60px; border-radius:20px; background:${cat.color}15; color:${cat.color}; border: 1px solid ${cat.color}30;">
+          ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:18px">` : `<i data-lucide="${cat.icon}" style="width:28px;height:28px"></i>`}
         </div>
         <div style="flex:1">
-          <div style="font-weight:800;font-size:18px;color:var(--text-1); letter-spacing:-0.5px;">${p.name}</div>
-          <div style="font-size:13px;color:var(--text-3);margin-top:2px; font-weight:600;">${cat.name}</div>
+          <div style="font-weight:900; font-size:20px; color:var(--text-1); letter-spacing:-0.8px; margin-bottom:4px;">${p.name}</div>
+          <div style="font-size:14px; color:var(--text-3); font-weight:700; display:flex; align-items:center; gap:6px;">
+            <span style="width:8px; height:8px; border-radius:50%; background:${cat.color}"></span> ${cat.name}
+          </div>
         </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn-util edit" onclick="openEditPlanning('${p.id}')"><i data-lucide="pencil-line" style="width:20px; height:20px;"></i></button>
-        </div>
+        <button class="btn-util edit" onclick="openEditPlanning('${p.id}')" style="width:44px; height:44px; border-radius:14px;">
+          <i data-lucide="pencil-line" style="width:22px; height:22px;"></i>
+        </button>
       </div>
     </div>`;
   }).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="calendar-plus" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>Planlanan ödeme yok</p></div>';
