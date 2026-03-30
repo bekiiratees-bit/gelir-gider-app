@@ -406,6 +406,7 @@ function renderHome() {
 
   renderCalendar('home-calendar-grid', 'home-calendar-title');
   renderFixedWarnings();
+  renderHomeFixed();
 }
 
 function generateInsights(txsMonth, txsDay) {
@@ -535,61 +536,97 @@ function renderFixed() {
   const el = document.getElementById('fixed-list');
   const fixTotEl = document.getElementById('fixed-total');
   
-  const totalFixed = state.fixedExpenses.reduce((s,f)=>s+f.amount,0);
-  if (fixTotEl) fixTotEl.textContent = '₺' + fmt(totalFixed);
+  const activeFixed = state.fixedExpenses.filter(x => !x.isEnded);
+  const totalFixed = activeFixed.reduce((s,f)=>s+f.amount,0);
+  if (fixTotEl) fixTotEl.textContent = '₺' + totalFixed.toLocaleString();
   if (!el) return;
 
-  el.innerHTML = state.fixedExpenses.length ? state.fixedExpenses.map(f => {
-    const days = daysUntilPayment(f.payDay);
-    const isWarning = days <= 2;
+  const now = nowDate();
+  const currentMonthYear = now.toISOString().slice(0, 7);
+  const currentDay = now.getDate();
+
+  el.innerHTML = activeFixed.map(f => {
     const cat = getCatById(f.categoryId);
+    const monthsDiff = getMonthsDiff(f.startDate || today(), today());
+    const isPaidThisMonth = f.paidMonths && f.paidMonths.includes(currentMonthYear);
     
-    // Duration logic
-    let durationText = '';
-    let isExpired = false;
-    if (f.duration && f.duration > 0) {
-      const start = new Date(f.startDate || f.createdAt || new Date());
-      const now = new Date();
-      const elapsed = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()) + 1;
-      const rem = f.duration - elapsed;
-      durationText = `<div class="fixed-duration-badge ${rem<=1?'warning':'active'}">${elapsed} / ${f.duration} Ay</div>`;
-      if (elapsed >= f.duration) isExpired = true;
+    let displayAmount = f.amount;
+    let interestAdded = 0;
+    
+    if (f.dailyInterest && currentDay > f.payDay && !isPaidThisMonth) {
+      const daysOverdue = currentDay - f.payDay;
+      interestAdded = f.amount * (f.dailyInterest / 100) * daysOverdue;
+      displayAmount += interestAdded;
     }
 
-    return `<div class="card ${isWarning ? 'warning-blink' : ''}" style="${isWarning?'border:1.5px solid var(--red)':''}; margin-bottom:12px; cursor:default; opacity:${isExpired?0.5:1}">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="tx-avatar" style="background:${cat.color}25;color:${cat.color}">
-          ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px"></i>`}
-        </div>
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:15px;color:var(--text-1)">${f.name} ${isExpired?'<small>(Bitti)</small>':''}</div>
-          <div style="font-size:12px;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:6px">
-            Ayın ${f.payDay}. günü ${durationText}
+    return `<div class="card" style="margin-bottom:16px; padding:20px; ${isPaidThisMonth ? 'border:1px solid var(--green); background:rgba(0,214,143,0.02)' : ''}">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="tx-avatar" style="background:${cat.color}20; color:${cat.color}; border:1px solid ${cat.color}30;">
+            <i data-lucide="${cat.icon}"></i>
           </div>
-          <div style="font-size:12px;color:${isWarning?'var(--red)':'var(--text-2)'};font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px">
-            <i data-lucide="clock" style="width:12px;height:12px"></i> ${days} gün kaldı
+          <div>
+            <div style="font-weight:900; font-size:16px; color:var(--text-1)">${f.name}</div>
+            <div style="font-size:12px; color:var(--text-3); font-weight:700;">Her ayın ${f.payDay}. günü</div>
           </div>
         </div>
         <div style="text-align:right">
-          <div style="font-weight:800;font-size:16px;color:var(--red);letter-spacing:-0.3px">₺${fmtShort(f.amount)}</div>
-          <button class="btn-util edit" onclick="openEditFixed('${f.id}')" style="margin-left:auto;margin-top:6px"><i data-lucide="pencil-line"></i></button>
+          <div style="font-weight:900; font-size:18px; color:${interestAdded > 0 ? '#ff9f43' : 'var(--text-1)'}">₺${displayAmount.toLocaleString()}</div>
+          ${interestAdded > 0 ? `<div class="interest-text"><i data-lucide="trending-up" style="width:12px; height:12px;"></i> +₺${interestAdded.toFixed(2)} Faiz</div>` : ''}
         </div>
       </div>
-    </div>`;
-  }).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="calendar-off" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>Sabit ödeme yok</p></div>';
 
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <div style="font-size:11px; font-weight:800; color:var(--text-3); text-transform:uppercase;">
+            ${f.duration > 0 ? `Vade: ${monthsDiff} / ${f.duration} Ay` : 'SÜRESİZ ÖDEME'}
+          </div>
+          ${f.totalDebt ? `<div style="font-size:11px; font-weight:800; color:var(--text-2);">TOPLAM BORÇ: ₺${f.totalDebt.toLocaleString()}</div>` : ''}
+        </div>
+        ${isPaidThisMonth ? `<div class="fixed-paid-badge"><i data-lucide="check-circle" style="width:12px; height:12px;"></i> ÖDENDİ</div>` : ''}
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:16px;">
+        ${!isPaidThisMonth ? `<button class="btn-fixed-pay" style="flex:2" onclick="markFixedPaid('${f.id}')"><i data-lucide="crosshair"></i> Ödeme Sağlandı</button>` : `<button class="btn-fixed-pay disabled" style="flex:2" disabled><i data-lucide="check"></i> Ay Ödemesi Tamam</button>`}
+        <button class="btn-fixed-end" style="flex:1" onclick="endFixedPayment('${f.id}')"><i data-lucide="x-circle"></i> Bitir</button>
+        <button class="btn-util edit" style="width:44px; height:44px;" onclick="openEditFixed('${f.id}')"><i data-lucide="pencil-line"></i></button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty-state">Sabit ödeme yok</div>';
+  
   const catMap = {};
-  state.fixedExpenses.forEach(f => { catMap[f.categoryId] = (catMap[f.categoryId]||0) + f.amount; });
+  activeFixed.forEach(f => { catMap[f.categoryId] = (catMap[f.categoryId]||0) + f.amount; });
   const chartEl = document.getElementById('fixed-chart');
-  if (chartEl) {
-    if (Object.keys(catMap).length > 0) {
-      const labels = Object.keys(catMap).map(id => getCatById(id).name);
-      const vals = Object.values(catMap);
-      drawBarChart(chartEl, labels, vals.map(()=>0), vals);
-    } else {
-      const ctx = chartEl.getContext('2d'); ctx.clearRect(0,0,chartEl.width,chartEl.height);
-    }
+  if (chartEl && Object.keys(catMap).length > 0) {
+    drawBarChart(chartEl, Object.keys(catMap).map(id => getCatById(id).name), Object.values(catMap).map(()=>0), Object.values(catMap));
   }
+}
+
+function renderHomeFixed() {
+  const el = document.getElementById('home-fixed-list');
+  if (!el) return;
+  const currentMonthYear = nowDate().toISOString().slice(0, 7);
+  el.innerHTML = state.fixedExpenses.filter(x => !x.isEnded).map(f => {
+    const days = daysUntilPayment(f.payDay);
+    const isToday = days === 0;
+    const isWarning = days <= 2;
+    const cat = getCatById(f.categoryId);
+    const isPaid = f.paidMonths && f.paidMonths.includes(currentMonthYear);
+
+    return `<div class="card ${isWarning && !isPaid ? 'warning-blink' : ''}" style="margin-right:12px; min-width:180px; padding:16px; opacity:${isPaid ? 0.6 : 1}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="tx-avatar" style="width:36px;height:36px;background:${cat.color}25;color:${cat.color}">
+          <i data-lucide="${cat.icon}" style="width:18px;height:18px"></i>
+        </div>
+        <div style="font-weight:700;font-size:14px;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</div>
+      </div>
+      <div style="font-size:16px;font-weight:900;color:var(--text-1);margin-bottom:4px">₺${f.amount.toLocaleString()}</div>
+      <div style="font-size:11px;color:${isWarning && !isPaid ? 'var(--red)' : 'var(--text-3)'};font-weight:700">
+        ${isPaid ? '<i data-lucide="check-circle" style="width:10px;height:10px"></i> ÖDENDİ' : (isToday ? 'BUGÜN' : days + ' gün')}
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty-state">Sabit yok</div>';
+  refreshIcons();
 }
 
 function renderCategories() {
@@ -720,6 +757,8 @@ function openFixedModal() {
   document.getElementById('fixed-amount').value = '';
   document.getElementById('fixed-payday').value = '1';
   document.getElementById('fixed-duration').value = '0';
+  document.getElementById('fixed-total-debt').value = '';
+  document.getElementById('fixed-interest').value = '';
   document.getElementById('fixed-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   document.getElementById('del-fixed-btn').style.display = 'none';
   document.getElementById('modal-fixed').classList.add('open');
@@ -733,6 +772,8 @@ function openEditFixed(id) {
   document.getElementById('fixed-amount').value = f.amount;
   document.getElementById('fixed-payday').value = f.payDay;
   document.getElementById('fixed-duration').value = f.duration || 0;
+  document.getElementById('fixed-total-debt').value = f.totalDebt || '';
+  document.getElementById('fixed-interest').value = f.dailyInterest || '';
   document.getElementById('fixed-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}" ${c.id===f.categoryId?'selected':''}>${c.name}</option>`).join('');
   document.getElementById('del-fixed-btn').style.display = 'flex';
   document.getElementById('modal-fixed').classList.add('open');
@@ -742,14 +783,16 @@ function saveFixed() {
   const amount = parseFloat(document.getElementById('fixed-amount').value);
   const payDay = parseInt(document.getElementById('fixed-payday').value);
   const duration = parseInt(document.getElementById('fixed-duration').value) || 0;
+  const totalDebt = parseFloat(document.getElementById('fixed-total-debt').value) || null;
+  const dailyInterest = parseFloat(document.getElementById('fixed-interest').value) || null;
   const categoryId = document.getElementById('fixed-cat-select').value;
   if (!name || !amount || !payDay) { alert('Lütfen tüm alanları doldurun.'); return; }
   
   if (editFixedId) {
     const idx = state.fixedExpenses.findIndex(x => x.id === editFixedId);
-    if (idx !== -1) state.fixedExpenses[idx] = { ...state.fixedExpenses[idx], name, amount, payDay, duration, categoryId };
+    if (idx !== -1) state.fixedExpenses[idx] = { ...state.fixedExpenses[idx], name, amount, payDay, duration, totalDebt, dailyInterest, categoryId };
   } else {
-    state.fixedExpenses.push({ id: uid(), name, amount, payDay, duration, categoryId, startDate: today(), createdAt: new Date().toISOString() });
+    state.fixedExpenses.push({ id: uid(), name, amount, payDay, duration, totalDebt, dailyInterest, categoryId, startDate: today(), createdAt: new Date().toISOString(), paidMonths: [], isEnded: false });
   }
   saveState(); closeModal('modal-fixed'); renderFixed(); renderHome();
 }
@@ -1171,6 +1214,47 @@ function clearAllData() {
   if (!confirm('TÜM VERİLER SİLİNECEK! Onaylıyor musunuz?')) return;
   state.transactions = []; state.fixedExpenses = [];
   saveState(); renderApp();
+}
+
+// ===================== HELPERS =====================
+function getMonthsDiff(startStr, endStr) {
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+}
+
+function markFixedPaid(id) {
+  const f = state.fixedExpenses.find(x => x.id === id);
+  if (!f) return;
+  const currentMonthYear = nowDate().toISOString().slice(0, 7);
+  if (!f.paidMonths) f.paidMonths = [];
+  if (f.paidMonths.includes(currentMonthYear)) return;
+  
+  // Calculate current amount (with interest if overdue)
+  let finalAmount = f.amount;
+  const currentDay = nowDate().getDate();
+  if (f.dailyInterest && currentDay > f.payDay) {
+    const daysOverdue = currentDay - f.payDay;
+    finalAmount += f.amount * (f.dailyInterest / 100) * daysOverdue;
+  }
+
+  f.paidMonths.push(currentMonthYear);
+  if (f.totalDebt) f.totalDebt = Math.max(0, f.totalDebt - f.amount); // Subtract base amount from debt
+
+  // Also add to transactions
+  state.transactions.push({ 
+    id: uid(), type: 'expense', amount: finalAmount, categoryId: f.categoryId, 
+    note: `${f.name} (Sabit Ödeme)`, date: today(), createdAt: new Date().toISOString() 
+  });
+
+  saveState(); renderFixed(); renderHome(); renderTransactions();
+}
+
+function endFixedPayment(id) {
+  if (!confirm('Bu ödeme planını tamamen bitirmek istediğinize emin misiniz? Gelecek aylarda görünmeyecektir.')) return;
+  const f = state.fixedExpenses.find(x => x.id === id);
+  if (f) f.isEnded = true;
+  saveState(); renderFixed(); renderHome();
 }
 
 // ===================== INIT =====================

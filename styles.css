@@ -232,6 +232,36 @@ html, body {
 }
 .ultra-plan-card.urgent { animation: pulse-glow-ultra 2s infinite ease-in-out; }
 
+/* ============ FIXED EXPENSE ACTIONS ============ */
+.btn-fixed-pay {
+  background: var(--green); color: #fff; border: none; border-radius: 12px;
+  padding: 8px 16px; font-size: 13px; font-weight: 800; display:flex; align-items:center; gap:6px;
+  cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(0,214,143,0.3);
+}
+.btn-fixed-pay:active { transform:scale(0.95); }
+.btn-fixed-pay.disabled { background:rgba(255,255,255,0.05); color:var(--text-3); box-shadow:none; cursor:default; }
+
+.btn-fixed-end {
+  background: rgba(255,255,255,0.05); color: var(--text-3); border: 1px solid var(--border); border-radius: 12px;
+  padding: 8px 16px; font-size: 13px; font-weight: 800; cursor:pointer; transition:all 0.2s;
+}
+.btn-fixed-end:hover { background:rgba(255,74,112,0.15); color:var(--red); border-color:var(--red); }
+
+.fixed-paid-badge {
+  background: rgba(0,214,143,0.1); color: var(--green); border: 1px solid var(--green);
+  padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase;
+}
+
+.interest-text { color: #ff9f43; font-weight: 800; font-size: 12px; display:flex; align-items:center; gap:4px; }
+.interest-text i { animation: shake 0.5s infinite; }
+
+@keyframes shake {
+  0% { transform:translateX(0); }
+  25% { transform:translateX(-1px); }
+  75% { transform:translateX(1px); }
+  100% { transform:translateX(0); }
+}
+
 @keyframes blink-red {
   0% { opacity:0; }
   50% { opacity:1; box-shadow:inset 0 0 10px rgba(255,74,112,0.4); }

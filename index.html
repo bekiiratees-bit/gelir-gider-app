@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gelir·Gider">
+<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.7.0">
 <meta name="theme-color" content="#07070f">
 <title>Gelir·Gider – Bekir ATEŞ</title>
-<link rel="stylesheet" href="styles.css?v=1.6.0">
+<link rel="stylesheet" href="styles.css?v=1.7.0">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="app_icon_512.png">
 <!-- Lucide Icons -->
@@ -459,13 +459,26 @@
       <label class="form-label"><i data-lucide="coins" style="stroke-width:2"></i> Tutar (₺)</label>
       <input class="form-input" id="fixed-amount" type="number" inputmode="decimal" placeholder="0,00" min="0">
     </div>
-    <div class="form-group">
-      <label class="form-label"><i data-lucide="calendar-days" style="stroke-width:2"></i> Ödeme Günü (ayın kaçı)</label>
-      <input class="form-input" id="fixed-payday" type="number" min="1" max="31" value="1" placeholder="1–31">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+      <div class="form-group">
+        <label class="form-label"><i data-lucide="calendar-days" style="stroke-width:2"></i> Günü</label>
+        <input class="form-input" id="fixed-payday" max="31" min="1" type="number" placeholder="1-31">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i data-lucide="timer" style="stroke-width:2"></i> Vade (Ay)</label>
+        <input class="form-input" id="fixed-duration" min="0" type="number" placeholder="0 = Sınırsız">
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label"><i data-lucide="repeat" style="stroke-width:2"></i> Kaç Ay Sürecek? (0: Sınırsız)</label>
-      <input class="form-input" id="fixed-duration" type="number" min="0" value="0" placeholder="Örn: 12">
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+      <div class="form-group">
+        <label class="form-label"><i data-lucide="wallet" style="stroke-width:2"></i> Toplam Borç</label>
+        <input class="form-input" id="fixed-total-debt" type="number" placeholder="Opsiyonel">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i data-lucide="trending-up" style="stroke-width:2"></i> Günlük Faiz %</label>
+        <input class="form-input" id="fixed-interest" step="0.01" type="number" placeholder="Örn: 0.05">
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label"><i data-lucide="tag" style="stroke-width:2"></i> Kategori</label>
@@ -649,7 +662,7 @@
     });
   }
 </script>
-<script src="app.js?v=1.6.0"></script>
+<script src="app.js?v=1.7.0"></script>
 <script>
 // Init Lucide icons (after DOM + app.js load)
 function initIcons() { if (window.lucide) lucide.createIcons(); }
