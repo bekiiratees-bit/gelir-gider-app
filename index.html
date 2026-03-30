@@ -519,9 +519,25 @@
       <input class="form-input" id="plan-date" type="date">
     </div>
 
-    <div class="form-group">
+    <div class="form-group" style="margin-bottom:12px;">
       <label class="form-label"><i data-lucide="tag" style="stroke-width:2"></i> Kategori</label>
       <select class="form-select" id="plan-cat-select"></select>
+    </div>
+
+    <div class="form-group" style="margin-bottom:24px;">
+      <label class="toggle-switch-wrap" style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-input); padding:16px; border-radius:16px; border:1px solid var(--border); cursor:pointer;" onclick="togglePlanRecurring()">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:36px; height:36px; border-radius:10px; background:rgba(74,139,255,0.1); color:var(--blue); display:flex; align-items:center; justify-content:center;">
+            <i data-lucide="repeat"></i>
+          </div>
+          <div>
+            <div style="font-size:14px; font-weight:800; color:var(--text-1)">Her Ay Tekrarla</div>
+            <div style="font-size:11px; font-weight:600; color:var(--text-3)">Her ayın aynı gününde gösterilir</div>
+          </div>
+        </div>
+        <div class="toggle-switch" id="plan-recurring-toggle"></div>
+      </label>
+      <input type="checkbox" id="plan-recurring" style="display:none">
     </div>
 
     <div class="form-group">
@@ -546,6 +562,18 @@
     </button>
     <button class="btn-ghost" onclick="closeModal('modal-planning')">
       İptal
+    </button>
+  </div>
+</div>
+
+<!-- PLAN DAY DETAIL MODAL (NEW) -->
+<div class="modal-overlay" id="modal-plan-day-detail" onclick="if(event.target===this)closeModal('modal-plan-day-detail')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="plan-detail-title">Günün Ödemeleri</div>
+    <div id="plan-detail-list"></div>
+    <button class="btn-primary" onclick="closeModal('modal-plan-day-detail')" style="margin-top:20px">
+      Tamam
     </button>
   </div>
 </div>

@@ -864,25 +864,46 @@ function renderPlanning() {
   
   el.innerHTML = items.length ? items.map(p => {
     const cat = getCatById(p.categoryId);
-    const date = new Date(p.dueDate);
-    const diff = Math.ceil((date - nowDate().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+    const now = nowDate();
+    now.setHours(0,0,0,0);
+    
+    let targetDate = new Date(p.dueDate);
+    if (p.isRecurring) {
+      const pDay = targetDate.getDate();
+      targetDate = new Date(now.getFullYear(), now.getMonth(), pDay);
+      if (now.getDate() > pDay) {
+        targetDate.setMonth(targetDate.getMonth() + 1);
+      }
+    }
+    
+    const diff = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
     const isToday = diff === 0;
     const isTomorrow = diff === 1;
-    const isWarning = diff <= 1 && diff >= 0;
+    const isWarning = diff <= 1;
 
-    return `<div class="card ${isWarning ? 'warning-blink' : ''}" style="${isWarning?'border:1.5px solid var(--red)':''}; margin-bottom:12px;">
+    return `<div class="card ${isWarning ? 'warning-blink' : ''}" style="${isWarning?'border:2.5px solid var(--red)':''}; margin-bottom:16px; padding:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+        <div class="plan-badge">
+          <i data-lucide="calendar"></i>
+          <span>${p.isRecurring ? `Her ayın ${new Date(p.dueDate).getDate()}. günü` : formatDate(p.dueDate)}</span>
+        </div>
+        <div class="plan-rem-pill ${diff > 1 ? 'green' : ''}">
+          <i data-lucide="clock"></i>
+          <span>${isToday ? 'Bugün!' : isTomorrow ? 'Yarın!' : diff + ' gün kaldı'}</span>
+        </div>
+      </div>
+      
       <div style="display:flex;align-items:center;gap:14px;">
-        <div class="tx-avatar" style="background:${cat.color}25;color:${cat.color}">
-          ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px"></i>`}
+        <div class="tx-avatar" style="width:52px; height:52px; background:${cat.color}25;color:${cat.color}">
+          ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:24px;height:24px"></i>`}
         </div>
         <div style="flex:1">
-          <div style="font-weight:700;font-size:15px;color:var(--text-1)">${p.name}</div>
-          <div style="font-size:12px;color:var(--text-3);margin-top:2px">${formatDate(p.dueDate)}</div>
-          <div style="font-size:12px;color:${isWarning?'var(--red)':'var(--text-2)'};font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px">
-            <i data-lucide="clock" style="width:12px;height:12px"></i> ${isToday ? 'Bugün!' : isTomorrow ? 'Yarın!' : diff + ' gün kaldı'}
-          </div>
+          <div style="font-weight:800;font-size:18px;color:var(--text-1); letter-spacing:-0.5px;">${p.name}</div>
+          <div style="font-size:13px;color:var(--text-3);margin-top:2px; font-weight:600;">${cat.name}</div>
         </div>
-        <button class="btn-util edit" onclick="openEditPlanning('${p.id}')"><i data-lucide="pencil-line"></i></button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-util edit" onclick="openEditPlanning('${p.id}')"><i data-lucide="pencil-line" style="width:20px; height:20px;"></i></button>
+        </div>
       </div>
     </div>`;
   }).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="calendar-plus" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>Planlanan ödeme yok</p></div>';
@@ -916,26 +937,75 @@ function renderCalendar(gridId, titleId) {
     const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const isToday = now.getFullYear() === calYear && now.getMonth() === calMonth && now.getDate() === d;
     
-    // Check for events
-    const dayEvents = state.planningItems.filter(p => p.dueDate === dateStr);
+    // Check for events (direct or recurring)
+    const dayEvents = state.planningItems.filter(p => {
+      const pDate = new Date(p.dueDate);
+      return p.dueDate === dateStr || (p.isRecurring && pDate.getDate() === d);
+    });
+    
     const hasEvent = dayEvents.length > 0;
     
-    // Check for alerts (tomorrow)
+    // Check for alerts (tomorrow or today)
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().slice(0, 10);
-    const isAlert = dayEvents.some(p => p.dueDate === tomorrowStr || p.dueDate === now.toISOString().slice(0, 10));
+    const todayStr = now.toISOString().slice(0, 10);
+    
+    const isAlert = dayEvents.some(p => {
+      if (!p.isRecurring) return p.dueDate === tomorrowStr || p.dueDate === todayStr;
+      const pDay = new Date(p.dueDate).getDate();
+      return pDay === tomorrow.getDate() || pDay === now.getDate();
+    });
 
     html += `
-      <div class="calendar-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}">
+      <div class="calendar-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}" onclick="openPlanDayDetail('${dateStr}')">
         ${d}
-        ${hasEvent ? `<div class="day-event-dot"></div>` : ''}
+        ${hasEvent ? `<div class="day-event-dot" style="${dayEvents.length > 1 ? 'width:12px; border-radius:4px' : ''}"></div>` : ''}
         ${isAlert ? `<div class="day-event-alert"></div>` : ''}
       </div>
     `;
   }
 
   grid.innerHTML = html;
+}
+
+function openPlanDayDetail(dateStr) {
+  const dObj = new Date(dateStr);
+  const day = dObj.getDate();
+  const dayName = getDayName(dateStr);
+  const title = document.getElementById('plan-detail-title');
+  const list = document.getElementById('plan-detail-list');
+
+  title.innerHTML = `<div style="font-size:14px; opacity:0.6; margin-bottom:4px;">${dayName}</div> ${day} ${title.innerText.split(' ').pop()}`;
+  
+  const events = state.planningItems.filter(p => {
+    const pDate = new Date(p.dueDate);
+    return p.dueDate === dateStr || (p.isRecurring && pDate.getDate() === day);
+  });
+
+  if (events.length === 0) {
+    list.innerHTML = '<div class="empty-state">Bu güne ait planlı ödeme bulunmuyor.</div>';
+  } else {
+    list.innerHTML = events.map(p => {
+      const cat = getCatById(p.categoryId);
+      return `
+        <div class="card" style="margin-bottom:12px; padding:16px;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div class="tx-avatar" style="background:${cat.color}15; color:${cat.color}">
+              ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px"></i>`}
+            </div>
+            <div style="flex:1">
+              <div style="font-weight:800; font-size:16px; color:var(--text-1)">${p.name}</div>
+              <div style="font-size:12px; color:var(--text-3); font-weight:600;">${cat.name} ${p.isRecurring ? '(Aylık Tekrarlı)' : ''}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    refreshIcons();
+  }
+  
+  document.getElementById('modal-plan-day-detail').classList.add('open');
 }
 
 function changeMonth(dir) {
@@ -946,11 +1016,19 @@ function changeMonth(dir) {
   renderCalendar('plan-calendar-grid', 'plan-calendar-title');
 }
 
+function togglePlanRecurring() {
+  const chk = document.getElementById('plan-recurring');
+  chk.checked = !chk.checked;
+  document.getElementById('plan-recurring-toggle').classList.toggle('on', chk.checked);
+}
+
 function openPlanningModal() {
   editPlanningId = null;
   document.getElementById('modal-planning-title').textContent = 'Planlı Ödeme Ekle';
   document.getElementById('plan-name').value = '';
   document.getElementById('plan-date').value = today();
+  document.getElementById('plan-recurring').checked = false;
+  document.getElementById('plan-recurring-toggle').classList.remove('on');
   document.getElementById('plan-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   removePlanImage();
   document.getElementById('del-plan-btn').style.display = 'none';
@@ -964,6 +1042,8 @@ function openEditPlanning(id) {
   document.getElementById('modal-planning-title').textContent = 'Ödemeyi Düzenle';
   document.getElementById('plan-name').value = p.name;
   document.getElementById('plan-date').value = p.dueDate;
+  document.getElementById('plan-recurring').checked = p.isRecurring || false;
+  document.getElementById('plan-recurring-toggle').classList.toggle('on', p.isRecurring);
   document.getElementById('plan-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}" ${c.id===p.categoryId?'selected':''}>${c.name}</option>`).join('');
   removePlanImage();
   if (p.image) {
@@ -980,14 +1060,15 @@ function openEditPlanning(id) {
 function savePlanning() {
   const name = document.getElementById('plan-name').value.trim();
   const dueDate = document.getElementById('plan-date').value;
+  const isRecurring = document.getElementById('plan-recurring').checked;
   const categoryId = document.getElementById('plan-cat-select').value;
   if (!name || !dueDate) { alert('Lütfen tüm alanları doldurun.'); return; }
 
   if (editPlanningId) {
     const idx = state.planningItems.findIndex(x => x.id === editPlanningId);
-    if (idx !== -1) state.planningItems[idx] = { ...state.planningItems[idx], name, dueDate, categoryId, image: addPlanImage };
+    if (idx !== -1) state.planningItems[idx] = { ...state.planningItems[idx], name, dueDate, isRecurring, categoryId, image: addPlanImage };
   } else {
-    state.planningItems.push({ id: uid(), name, dueDate, categoryId, image: addPlanImage, createdAt: new Date().toISOString() });
+    state.planningItems.push({ id: uid(), name, dueDate, isRecurring, categoryId, image: addPlanImage, createdAt: new Date().toISOString() });
   }
   
   saveState(); closeModal('modal-planning'); renderApp();
