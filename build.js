@@ -11,13 +11,13 @@ const lucide = fs.readFileSync(path.join(dir, 'lucide.min.js'), 'utf8');
 const icon = fs.readFileSync(path.join(dir, 'app_icon_512.png'));
 const iconBase64 = `data:image/png;base64,${icon.toString('base64')}`;
 
-// Inject CSS and JS
-let newHtml = html.replace('<link rel="stylesheet" href="styles.css">', `<style>\n${css}\n</style>`);
-newHtml = newHtml.replace('<script src="app.js"></script>', `<script>\n${js}\n</script>`);
+// Inject CSS and JS (using Regex to allow version queries like ?v=1.8.x)
+let newHtml = html.replace(/<link rel="stylesheet" href="styles\.css.*?>/i, `<style>\n${css}\n</style>`);
+newHtml = newHtml.replace(/<script src="app\.js.*?>/i, `<script>\n${js}\n</script>`);
 
 // Inject local Lucide icons inside the monolithic build
 newHtml = newHtml.replace(
-  '<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>',
+  /<script src="https:\/\/unpkg\.com\/lucide.*?><\/script>/i,
   `<script>\n${lucide}\n</script>`
 );
 

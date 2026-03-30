@@ -577,10 +577,11 @@ function renderFixed() {
           ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px;color:${cat.color}"></i>`}
         </div>
         
-        <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; padding: 4px 0;">
-          <div style="font-weight:900; font-size:15px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${f.name}</div>
-          <div style="font-size:11px; color:var(--text-3); font-weight:800; text-transform:uppercase; margin-top:8px; opacity:0.8; letter-spacing:0.3px; line-height:1;">
-            ${cat.name} <span style="margin:0 4px;opacity:0.3">|</span> ${f.payDay}. GÜN
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; padding: 2px 0;">
+          <div style="font-weight:900; font-size:15px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.4;">${f.name}</div>
+          <div style="font-size:11px; color:var(--text-3); font-weight:800; text-transform:uppercase; margin-top:6px; display:flex; justify-content:space-between; align-items:center; opacity:0.8; letter-spacing:0.3px;">
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%;">${cat.name}</span>
+            <span style="flex-shrink:0; margin-left:8px; opacity:0.5; font-size:10px;">${f.payDay}. GÜN</span>
           </div>
           ${interestAdded > 0 ? `<div class="interest-text" style="font-size:10px; margin-top:4px;"><i data-lucide="trending-up" style="width:11px; height:11px;"></i> +₺${interestAdded.toFixed(2)}</div>` : ''}
         </div>

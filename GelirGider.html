@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gelir·Gider">
+<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.8.4">
 <meta name="theme-color" content="#07070f">
 <title>Gelir·Gider – Bekir ATEŞ</title>
 <style>
@@ -177,16 +177,124 @@ html, body {
 .icon-btn.expense { color:var(--red); }
 .icon-btn svg { width:22px; height:22px; }
 
-/* ============ BOTTOM NAV ============ */
+/* ============ CALENDAR & PLANNING ============ */
+.calendar-wrap { margin-bottom:20px; }
+.calendar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.calendar-title { font-size:15px; font-weight:800; color:var(--text-1); }
+.calendar-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; }
+.calendar-day-label { font-size:10px; font-weight:800; color:var(--text-3); text-align:center; padding-bottom:4px; text-transform:uppercase; }
+.calendar-day {
+  aspect-ratio:1; border-radius:12px; background:var(--bg-input); border:1px solid var(--border);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:var(--text-2); position:relative; transition:all 0.2s;
+  cursor:pointer;
+}
+.calendar-day:active { transform:scale(0.9); background:rgba(255,255,255,0.05); }
+.calendar-day.today { border-color:var(--green); background:rgba(0,214,143,0.05); color:var(--text-1); }
+.calendar-day.selected { border-color:var(--text-1); transform:scale(0.95); }
+.calendar-day.has-event { border-color:var(--blue); color:var(--text-1); }
+.calendar-day.has-event:hover { background:rgba(74,139,255,0.1); border-color:rgba(74,139,255,0.5); }
+
+.day-event-dot { width:4px; height:4px; border-radius:50%; background:var(--blue); position:absolute; bottom:6px; }
+.day-event-alert { position:absolute; inset:0; border-radius:inherit; border:1.5px solid var(--red); z-index:1; animation:blink-red 1s infinite; pointer-events:none; }
+
+/* ============ ULTRA-PREMIUM COMPACT (V6) - PURPLE GLASS ============ */
+.ultra-plan-card {
+  position: relative; overflow: hidden; margin-bottom: 12px; padding: 12px 16px;
+  border-radius: 24px; 
+  background: linear-gradient(135deg, rgba(98, 54, 255, 0.15) 0%, rgba(182, 33, 255, 0.1) 100%);
+  border: 1px solid rgba(182, 33, 255, 0.2); 
+  backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+  box-shadow: 0 10px 30px rgba(98, 54, 255, 0.1);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.ultra-plan-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(182, 33, 255, 0.3), transparent);
+}
+
+.plan-date-viz {
+  font-size: 9px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px;
+  padding: 4px 8px; border-radius: 8px; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.plan-countdown-viz {
+  text-align: right; min-width: 60px;
+}
+.countdown-num { 
+  font-size: 24px; font-weight: 1000; line-height: 1; letter-spacing: -1px;
+  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.countdown-label { font-size: 8px; font-weight: 900; color: var(--text-3); text-transform: uppercase; margin-top: 2px; }
+
+.plan-neon-red { box-shadow: 0 0 20px rgba(255, 74, 112, 0.2); border-color: rgba(255, 74, 112, 0.3) !important; }
+.plan-neon-red .countdown-num { background: linear-gradient(135deg, #ff4a70 0%, #ff94aa 100%); -webkit-background-clip: text; background-clip: text; }
+.plan-neon-red .countdown-label { color: #ff708a; }
+
+.plan-neon-green { border-color: rgba(0, 214, 143, 0.15) !important; }
+.plan-neon-green .countdown-num { background: linear-gradient(135deg, #00d68f 0%, #a2ffe1 100%); -webkit-background-clip: text; background-clip: text; }
+.plan-neon-green .countdown-label { color: #17ffb2; }
+
+@keyframes pulse-glow-ultra {
+  0% { box-shadow: 0 0 20px rgba(255, 74, 112, 0.2); border-color: rgba(255, 74, 112, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(255, 74, 112, 0.4); border-color: rgba(255, 74, 112, 0.6); }
+  100% { box-shadow: 0 0 20px rgba(255, 74, 112, 0.2); border-color: rgba(255, 74, 112, 0.3); }
+}
+.ultra-plan-card.urgent { animation: pulse-glow-ultra 2s infinite ease-in-out; }
+
+/* ============ FIXED EXPENSE ACTIONS ============ */
+.btn-fixed-pay {
+  background: var(--green); color: #fff; border: none; border-radius: 12px;
+  padding: 8px 16px; font-size: 13px; font-weight: 800; display:flex; align-items:center; gap:6px;
+  cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(0,214,143,0.3);
+}
+.btn-fixed-pay:active { transform:scale(0.95); }
+.btn-fixed-pay.disabled { background:rgba(255,255,255,0.05); color:var(--text-3); box-shadow:none; cursor:default; }
+
+.btn-fixed-end {
+  background: rgba(255,255,255,0.05); color: var(--text-3); border: 1px solid var(--border); border-radius: 12px;
+  height: 40px; padding: 0 12px; font-size: 13px; font-weight: 800; cursor:pointer; transition:all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-fixed-end i { width: 16px; height: 16px; }
+.btn-fixed-end:hover { background:rgba(255,74,112,0.15); color:var(--red); border-color:var(--red); }
+
+.fixed-paid-badge {
+  background: rgba(0,214,143,0.1); color: var(--green); border: 1px solid var(--green);
+  padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase;
+}
+
+.interest-text { color: #ff9f43; font-weight: 800; font-size: 12px; display:flex; align-items:center; gap:4px; }
+.interest-text i { animation: shake 0.5s infinite; }
+
+@keyframes shake {
+  0% { transform:translateX(0); }
+  25% { transform:translateX(-1px); }
+  75% { transform:translateX(1px); }
+  100% { transform:translateX(0); }
+}
+
+@keyframes blink-red {
+  0% { opacity:0; }
+  50% { opacity:1; box-shadow:inset 0 0 10px rgba(255,74,112,0.4); }
+  100% { opacity:0; }
+}
+
+/* ============ REFINED BOTTOM NAV (6 ITEMS) ============ */
 .bottom-nav {
   position:fixed; bottom:0; left:50%; transform:translateX(-50%);
   width:100%; max-width:430px; height:calc(var(--nav-h) + var(--safe-b));
-  padding:8px 8px var(--safe-b);
+  padding:8px 4px var(--safe-b);
   background:rgba(10,10,20,0.85); box-shadow:0 -4px 32px rgba(0,0,0,0.4);
   backdrop-filter:blur(32px) saturate(200%); -webkit-backdrop-filter:blur(32px) saturate(200%);
   display:flex; align-items:center; justify-content:space-around; z-index:200;
   border-top:1px solid rgba(255,255,255,0.05);
 }
+.nav-label { font-size:9px; font-weight:700; letter-spacing: -0.2px; }
+.nav-item { gap:2px; }
+.nav-item svg { width:20px; height:20px; }
 [data-theme="light"] .bottom-nav { background:rgba(255,255,255,0.85); border-top:1px solid rgba(0,0,0,0.04); box-shadow:0 -4px 32px rgba(0,0,0,0.05); }
 
 .nav-item {
@@ -231,12 +339,11 @@ html, body {
 .balance-amount.positive { color:var(--text-1); }
 .balance-amount.negative { color:var(--text-1); }
 
-.balance-row { display:flex; gap:12px; position:relative; z-index:1; }
-.balance-pill { flex:1; padding:16px; border-radius:var(--r-lg); background:var(--bg-input); border:1px solid var(--border); display:flex; flex-direction:column; gap:6px; }
-.balance-pill-head { display:flex; align-items:center; gap:8px; }
-.balance-pill-head svg { width:16px; height:16px; }
-.balance-pill-label { font-size:12px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
-.balance-pill-val { font-size:20px; font-weight:800; letter-spacing:-0.5px; }
+.balance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 16px; }
+.balance-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
+.balance-label { font-size: 10px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px; }
+.balance-label i { width: 12px; height: 12px; }
+.balance-val { font-size: 15px; font-weight: 900; color: var(--text-1); letter-spacing: -0.5px; }
 
 /* ============ QUICK STATS ============ */
 .quick-stats { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:16px; }
@@ -276,8 +383,8 @@ html, body {
 .section-label-action { font-size:14px; font-weight:700; color:var(--text-2); cursor:pointer; padding:4px 8px; border-radius:12px; background:var(--bg-input); }
 
 /* UTIL BUTTONS (EDIT/DELETE) */
-.btn-util { width:32px; height:32px; border-radius:10px; border:none; background:var(--bg-input); color:var(--text-3); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; }
-.btn-util:active { transform:scale(0.9); }
+.btn-util { width:40px; height:40px; border-radius:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text-3); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.btn-util i { width:18px; height:18px; }
 .btn-util.edit:hover { color:var(--blue); }
 .btn-util.del:hover { color:var(--red); }
 .btn-util svg { width:16px; height:16px; }
@@ -396,13 +503,7 @@ html, body {
 }
 .toggle-switch.on::after { transform:translateX(22px); }
 
-/* CHARTS & UTILS */
-canvas { display:block; width:100% !important; }
-.empty-state { text-align:center; padding:40px 20px; color:var(--text-3); }
-.license { text-align:center; padding:20px 0 10px; font-size:11px; color:var(--text-3); font-weight:600; letter-spacing:0.5px; opacity:0; animation:fade 1s forwards 0.5s; }
-@keyframes fade { to { opacity:0.5; } }
-
-/* ============ TRANSACTION TYPE TOGGLE & CARD MODULE ============ */
+/* ============ TRANSACTION TYPE TOGGLE (V3 PREMIUM) ============ */
 .type-toggle {
   display: flex;
   background: var(--bg-input);
@@ -426,7 +527,6 @@ canvas { display:block; width:100% !important; }
   gap: 8px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  -webkit-tap-highlight-color: transparent;
 }
 .type-btn i {
   width: 18px;
@@ -444,11 +544,45 @@ canvas { display:block; width:100% !important; }
   box-shadow: 0 4px 12px rgba(0, 214, 143, 0.3);
 }
 
+/* CHARTS & UTILS */
+canvas { display:block; width:100% !important; }
+.empty-state { text-align:center; padding:40px 20px; color:var(--text-3); }
+.license { text-align:center; padding:20px 0 10px; font-size:11px; color:var(--text-3); font-weight:600; letter-spacing:0.5px; opacity:0; animation:fade 1s forwards 0.5s; }
+@keyframes fade { to { opacity:0.5; } }
+
+/* ============ TRANSACTION GROUPING ============ */
+.tx-group-header {
+  font-size: 13px; font-weight: 800; color: var(--text-3); text-transform: uppercase;
+  letter-spacing: 0.8px; padding: 16px 0 8px; border-bottom: 1px solid var(--border);
+  margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+}
+.tx-group-total { font-size: 11px; opacity: 0.6; }
+
+/* ============ FIXED DURATION BADGE ============ */
+.fixed-duration-badge {
+  font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 8px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  color: var(--text-3); display: inline-flex; align-items: center; gap: 4px;
+}
+.fixed-duration-badge.active { color: var(--green); border-color: rgba(0,214,143,0.3); background: rgba(0,214,143,0.05); }
+.fixed-duration-badge.warning { color: var(--orange); border-color: rgba(255,171,74,0.3); background: rgba(255,171,74,0.05); }
+
 /* SAFARI BACKDROP FIXES */
-.card, .bottom-nav, .modal-overlay, .modal-sheet, .period-tabs, .icon-btn, .qs-card, .insight-chip, .settings-row {
+.card, .bottom-nav, .modal-overlay, .modal-sheet, .period-tabs, .icon-btn, .qs-card, .insight-chip, .settings-row, .type-toggle {
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
+
+/* REFINED UTIL BUTTONS */
+.btn-util { 
+  width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-3); 
+  display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; 
+}
+.btn-util:active { transform: scale(0.9); }
+.btn-util.edit { background: rgba(74, 139, 255, 0.08); color: var(--blue); border-color: rgba(74, 139, 255, 0.2); }
+.btn-util.del { background: rgba(255, 74, 112, 0.08); color: var(--red); border-color: rgba(255, 74, 112, 0.2); }
+.btn-util svg { width: 18px; height: 18px; }
 
 </style>
 
@@ -544,20 +678,18 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
         <div class="prog-track"><div class="prog-fill" id="budget-bar" style="width:0%"></div></div>
       </div>
 
-      <div class="balance-row">
-        <div class="balance-pill">
-          <div class="balance-pill-head">
-            <i data-lucide="arrow-up-right" style="color:var(--green);stroke-width:2.5"></i>
-            <span class="balance-pill-label">Gelir</span>
-          </div>
-          <div class="balance-pill-val" id="income-total" style="color:var(--text-1)">₺0,00</div>
+      <div class="balance-grid">
+        <div class="balance-item">
+          <span class="balance-label"><i data-lucide="trending-up"></i> Gelir</span>
+          <span class="balance-val" id="income-total">₺0</span>
         </div>
-        <div class="balance-pill">
-          <div class="balance-pill-head">
-            <i data-lucide="arrow-down-right" style="color:var(--red);stroke-width:2.5"></i>
-            <span class="balance-pill-label">Gider</span>
-          </div>
-          <div class="balance-pill-val" id="expense-total" style="color:var(--text-1)">₺0,00</div>
+        <div class="balance-item">
+          <span class="balance-label"><i data-lucide="trending-down"></i> Gider</span>
+          <span class="balance-val" id="expense-total">₺0</span>
+        </div>
+        <div class="balance-item">
+          <span class="balance-label"><i data-lucide="banknote"></i> Borç</span>
+          <span class="balance-val" id="debt-total" style="color:#ff9f43">₺0</span>
         </div>
       </div>
     </div>
@@ -585,6 +717,29 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
       <div style="max-width:190px;margin:0 auto"><canvas id="donut-chart"></canvas></div>
       <div class="pie-legend" id="donut-legend"></div>
     </div>
+
+    <!-- Bar Chart -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-label">Aylık Karşılaştırma</span>
+        <div style="display:flex;gap:10px;font-size:11px;font-weight:600">
+          <span style="color:var(--green)">● Gelir</span>
+          <span style="color:var(--red)">● Gider</span>
+        </div>
+      </div>
+      <canvas id="bar-chart" style="height:150px"></canvas>
+    </div>
+
+    <!-- Calendar Widget -->
+    <div class="card calendar-wrap">
+      <div class="calendar-header">
+        <div class="calendar-title" id="home-calendar-title">Takvim</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-util" onclick="changeMonth(-1)"><i data-lucide="chevron-left"></i></button>
+          <button class="btn-util" onclick="changeMonth(1)"><i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="calendar-grid" id="home-calendar-grid"></div>
     </div>
 
     <!-- Recent Transactions -->
@@ -645,6 +800,34 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
       <canvas id="fixed-chart" style="height:120px"></canvas>
     </div>
     <div id="fixed-list"></div>
+    <div class="license">License: BekirAtes</div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━ PLANNING ━━━━━━━━━━━━━━━ -->
+<div id="screen-planning" class="screen">
+  <div class="page-header">
+    <div class="page-header-left" style="display:flex; align-items:center; gap:12px;">
+      <img src="data:image/png;base64,/9j/2wCEAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSgBBwcHCggKEwoKEygaFhooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKP/AABEIAoACgAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APmiiiiqJFFFJSigApaKKAFFLSCloAKWkFLQAtH40UvegAoHWgUooAO1FFFABS0CjpQAtFIKWgApaQUo+nNABSiiloABRRRQAUtFHWgAFLSfWloAKKKP50AH1ooFLQAlL+lBooASilooAKKBxRQAUflQaKACjpRR35oAKM0dRR3oAKKWk+tAB3o60UUAHak/GlooASg0dKPrQAnrRxS9qOlACGkpcUY9KAEopaSgApKKKAE/Gij0ooAQ0h70pooAQ0UUd+tACUHmiigBKO1BooAKTFFFAxKQ0tBoASkpaSgQUlLRQAyiigUALQKKKAFFFFFACjpS9qSlFAAPal70CjtQAtFFFAC0CjFFAC0UUv0oAKKKUUAIKdSCloAWiiloASlo7UCgAFLR+tFABSjFJiloAKM0lLQAUopKXrigA60p46UUUAJ+NFKKKAEpRQKMUAFFA4paAEo6UUuKAExRilxRQAnajFLRQAlGKKX8aYCcUUp9qO1KwCUlO60nSmAgFFL0oIosAhopaSgBOKKX86SkAmOKCKWk+tABikNO/nSUANpMU7Hp1pPegBCPSkpxpOooAbj2opcUmOKAEoPWlpKAEopaQCgApDS0UANoNFHagBO1IadTTQAUGjpRQAyigUtAAKBRQKAFpaTvS0AFL2pKUUAL6UUCloAB9aUUlOFACUtApaAE+tL3o70UAApaP50uKAAUooooAMUtFHagBaPaiigQYpaKKADHrR+NLxRTASloooAOlLS80YoASg0tGM0AJ2paPejHpQAUdRS4ooAT2opcUuBQA3tRj1p2KMUANoxTv5UmPemAmKO9L/Klxx2oAbRTscUYoAbS96XFJjmgBCKTFO5ooATFIKdj2pMd6AE6Uhp3SkoAQ0lOxQe9ADe9IPU04jik780AJQDxS44pCOKVguJxiil7ZpD9KB3ENIRTjSH2pANopfxoP6UAIaSlNBoAb/OilNJQAnSkpaKAEpCKWgjrQAg6UlLSHrQAlJS0UANFAxSUtABRRRQAtLSUooABSikpaAFpRSUtAC0tIKUUAFKKQfSlFABSijtSj/JoABS47UfhRQAUUClx70xBSikpaACloFFABjml+tFGKAAUooxxS0AJ7mlpcUYoATHFLRilAoASj6UuKWmAn0opcUeooATFFLS4oATvSCnAfWigBO/SinY9qMUANx1oAp2KU0wG4oxTu1JigQmKMU6k7UDGkUU7tSevemAlFLR2pAJjtn/69Iadj2pMU7AJ60nandqTFFgENJj8qXpQc0gG4owKd0pDRYBp9qQ040Y9etFgGUU6kx0pANNIfalIpKAD8KSiikO4Gk70tIaQCUlLSUAJR2paSgBKKKDQAnekpTSUAJRRQetADKKKWgAoopaAClFJ+dLQAClFApaBhil7UCgUCF5paSlFABjilH6UdKPpQAD8ad1+lJnsKWmAc0ooFFAhe/eigCnD3oAQUv1oGAeop6ozfdVj9ATQA0ClFSra3DD5YJj9Iz/hUi2F2elrP/37P+FAFYD2pce1Whp95/z6XH/fs04ade/8+lx/37NMCpQBVz+zb3/nzuP+/Zo/s2+/587n/v2aAKlAFXBpt9/z5XP/AH7N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" alt="Logo" style="width:40px; height:40px; border-radius:10px; object-fit:contain;">
+      <div class="username">Planlama</div>
+    </div>
+    <button class="icon-btn" onclick="openPlanningModal()">
+      <i data-lucide="plus" style="stroke-width:2.5"></i>
+    </button>
+  </div>
+  <div class="scroll-area" style="padding-top:0">
+    <!-- Calendar Widget -->
+    <div class="card calendar-wrap">
+      <div class="calendar-header">
+        <div class="calendar-title" id="plan-calendar-title">Takvim</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-util" onclick="changeMonth(-1)"><i data-lucide="chevron-left"></i></button>
+          <button class="btn-util" onclick="changeMonth(1)"><i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="calendar-grid" id="plan-calendar-grid"></div>
+    </div>
+    <div id="planning-list"></div>
     <div class="license">License: BekirAtes</div>
   </div>
 </div>
@@ -730,40 +913,15 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
       </div>
     </div>
 
-    <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.7px;margin:16px 0 8px">Veri Yönetimi</div>
-    <div class="settings-row" onclick="exportData()" style="cursor:pointer">
-      <div class="settings-row-left">
-        <div class="settings-row-icon" style="background:rgba(74,139,255,0.12)">
-          <i data-lucide="download" style="stroke:var(--blue);stroke-width:2"></i>
-        </div>
-        <div class="settings-row-body">
-          <div class="settings-row-label">Verileri Dışa Aktar</div>
-          <div class="settings-row-sub">Tüm verileri JSON olarak indir</div>
-        </div>
-      </div>
-      <i data-lucide="chevron-right" style="stroke:var(--text-3);stroke-width:2;width:18px;height:18px"></i>
-    </div>
-    <div class="settings-row" onclick="document.getElementById('import-in').click()" style="cursor:pointer">
-      <div class="settings-row-left">
-        <div class="settings-row-icon" style="background:rgba(0,214,143,0.12)">
-          <i data-lucide="upload" style="stroke:var(--green);stroke-width:2"></i>
-        </div>
-        <div class="settings-row-body">
-          <div class="settings-row-label">Verileri İçe Aktar</div>
-          <div class="settings-row-sub">JSON veya CSV dosyasından yükle</div>
-        </div>
-      </div>
-      <i data-lucide="chevron-right" style="stroke:var(--text-3);stroke-width:2;width:18px;height:18px"></i>
-      <input type="file" id="import-in" hidden accept=".json,.csv" onchange="importData(event)">
-    </div>
-    <div class="settings-row" onclick="exportToCSV()" style="cursor:pointer">
+    <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.7px;margin:16px 0 8px">Veri</div>
+    <div class="settings-row" onclick="exportCSV()" style="cursor:pointer">
       <div class="settings-row-left">
         <div class="settings-row-icon" style="background:rgba(46,196,182,0.12)">
-          <i data-lucide="table" style="stroke:#2ec4b6;stroke-width:2"></i>
+          <i data-lucide="download" style="stroke:#2ec4b6;stroke-width:2"></i>
         </div>
         <div class="settings-row-body">
-          <div class="settings-row-label">CSV Olarak Aktar</div>
-          <div class="settings-row-sub">Excel uyumlu format</div>
+          <div class="settings-row-label">CSV Dışa Aktar</div>
+          <div class="settings-row-sub">Tüm işlemleri indir</div>
         </div>
       </div>
       <i data-lucide="chevron-right" style="stroke:var(--text-3);stroke-width:2;width:18px;height:18px"></i>
@@ -774,8 +932,8 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
           <i data-lucide="trash-2" style="stroke:var(--red);stroke-width:2"></i>
         </div>
         <div class="settings-row-body">
-          <div class="settings-row-label" style="color:var(--red)">Tüm Verileri Sıfırla</div>
-          <div class="settings-row-sub">Dikkat: Geri alınamaz!</div>
+          <div class="settings-row-label" style="color:var(--red)">Verileri Temizle</div>
+          <div class="settings-row-sub">Tüm kayıtlar silinir</div>
         </div>
       </div>
       <i data-lucide="chevron-right" style="stroke:var(--text-3);stroke-width:2;width:18px;height:18px"></i>
@@ -812,6 +970,11 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
     <div class="nav-icon-wrap"><i data-lucide="calendar-clock" style="stroke-width:2"></i></div>
     <span class="nav-label">Sabit</span>
   </div>
+  <div class="nav-item" data-screen="planning" onclick="showScreen('planning')">
+    <div class="nav-dot"></div>
+    <div class="nav-icon-wrap"><i data-lucide="calendar-check" style="stroke-width:2"></i></div>
+    <span class="nav-label">Planlama</span>
+  </div>
   <div class="nav-item" data-screen="categories" onclick="showScreen('categories')">
     <div class="nav-dot"></div>
     <div class="nav-icon-wrap"><i data-lucide="layers" style="stroke-width:2"></i></div>
@@ -831,14 +994,14 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
 <div class="modal-overlay" id="modal-add" onclick="if(event.target===this)closeModal('modal-add')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modal-add-title">Gider Ekle</div>
+    <div class="modal-title" id="modal-add-title">Gelir - Gider Ekle</div>
 
     <div class="type-toggle">
       <button class="type-btn expense active" data-type="expense" onclick="setAddType('expense')">
-        <i data-lucide="arrow-down-circle" style="stroke-width:2"></i> Gider
+        <i data-lucide="arrow-down-circle" style="stroke-width:2.5"></i> Gider
       </button>
       <button class="type-btn income" data-type="income" onclick="setAddType('income')">
-        <i data-lucide="arrow-up-circle" style="stroke-width:2"></i> Gelir
+        <i data-lucide="arrow-up-circle" style="stroke-width:2.5"></i> Gelir
       </button>
     </div>
 
@@ -884,9 +1047,26 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
       <label class="form-label"><i data-lucide="coins" style="stroke-width:2"></i> Tutar (₺)</label>
       <input class="form-input" id="fixed-amount" type="number" inputmode="decimal" placeholder="0,00" min="0">
     </div>
-    <div class="form-group">
-      <label class="form-label"><i data-lucide="calendar-days" style="stroke-width:2"></i> Ödeme Günü (ayın kaçı)</label>
-      <input class="form-input" id="fixed-payday" type="number" min="1" max="31" value="1" placeholder="1–31">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+      <div class="form-group">
+        <label class="form-label"><i data-lucide="calendar-days" style="stroke-width:2"></i> Günü</label>
+        <input class="form-input" id="fixed-payday" max="31" min="1" type="number" placeholder="1-31">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i data-lucide="timer" style="stroke-width:2"></i> Vade (Ay)</label>
+        <input class="form-input" id="fixed-duration" min="0" type="number" placeholder="0 = Sınırsız">
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+      <div class="form-group">
+        <label class="form-label"><i data-lucide="wallet" style="stroke-width:2"></i> Toplam Borç</label>
+        <input class="form-input" id="fixed-total-debt" type="number" placeholder="Opsiyonel">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i data-lucide="trending-up" style="stroke-width:2"></i> Günlük Faiz %</label>
+        <input class="form-input" id="fixed-interest" step="0.01" type="number" placeholder="Örn: 0.05">
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label"><i data-lucide="tag" style="stroke-width:2"></i> Kategori</label>
@@ -920,6 +1100,81 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
     </button>
     <button class="btn-ghost" onclick="closeModal('modal-budget')">
       İptal
+    </button>
+  </div>
+</div>
+
+<!-- PLANNING MODAL -->
+<div class="modal-overlay" id="modal-planning" onclick="if(event.target===this)closeModal('modal-planning')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-planning-title">Planlı Ödeme Ekle</div>
+    
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="file-text" style="stroke-width:2"></i> Ödeme Adı</label>
+      <input class="form-input" id="plan-name" type="text" placeholder="ör: Kredi Ödemesi, Okul Taksiti…">
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="calendar-days" style="stroke-width:2"></i> Son Ödeme Tarihi</label>
+      <input class="form-input" id="plan-date" type="date">
+    </div>
+
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label"><i data-lucide="tag" style="stroke-width:2"></i> Kategori</label>
+      <select class="form-select" id="plan-cat-select"></select>
+    </div>
+
+    <div class="form-group" style="margin-bottom:24px;">
+      <label class="toggle-switch-wrap" style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-input); padding:16px; border-radius:16px; border:1px solid var(--border); cursor:pointer;" onclick="togglePlanRecurring()">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:36px; height:36px; border-radius:10px; background:rgba(74,139,255,0.1); color:var(--blue); display:flex; align-items:center; justify-content:center;">
+            <i data-lucide="repeat"></i>
+          </div>
+          <div>
+            <div style="font-size:14px; font-weight:800; color:var(--text-1)">Her Ay Tekrarla</div>
+            <div style="font-size:11px; font-weight:600; color:var(--text-3)">Her ayın aynı gününde gösterilir</div>
+          </div>
+        </div>
+        <div class="toggle-switch" id="plan-recurring-toggle"></div>
+      </label>
+      <input type="checkbox" id="plan-recurring" style="display:none">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label"><i data-lucide="image" style="stroke-width:2"></i> Özel Görsel (Opsiyonel)</label>
+      <div style="display:flex; gap:10px; align-items:center; background:var(--bg-input); padding:8px 12px; border-radius:16px; border:1px solid var(--border)">
+        <label for="plan-img-in" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; font-weight:700; font-size:14px; color:var(--text-1);">
+          <i data-lucide="camera"></i> Görsel Seç
+        </label>
+        <input type="file" id="plan-img-in" accept="image/*" style="display:none" onchange="handlePlanImage(event)">
+        <div id="plan-img-preview" class="tx-avatar" style="display:none; width:36px; height:36px; min-width:36px;"></div>
+        <button class="btn-util del" id="plan-img-remove" style="display:none" onclick="removePlanImage()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="savePlanning()">
+      <i data-lucide="save" style="stroke-width:2.5"></i> Kaydet
+    </button>
+    <button class="btn-primary btn-danger" id="del-plan-btn" onclick="deletePlanning()" style="margin-top:10px;display:none">
+      <i data-lucide="trash-2" style="stroke-width:2.5"></i> Ödemeyi Sil
+    </button>
+    <button class="btn-ghost" onclick="closeModal('modal-planning')">
+      İptal
+    </button>
+  </div>
+</div>
+
+<!-- PLAN DAY DETAIL MODAL (NEW) -->
+<div class="modal-overlay" id="modal-plan-day-detail" onclick="if(event.target===this)closeModal('modal-plan-day-detail')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="plan-detail-title">Günün Ödemeleri</div>
+    <div id="plan-detail-list"></div>
+    <button class="btn-primary" onclick="closeModal('modal-plan-day-detail')" style="margin-top:20px">
+      Tamam
     </button>
   </div>
 </div>
@@ -984,6 +1239,7 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
     <button class="btn-ghost" onclick="closeModal('modal-cat-detail')">
       <i data-lucide="x" style="stroke-width:2"></i> Kapat
     </button>
+    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.8.4 • Bekir ATEŞ</div>
   </div>
 </div>
 </div>
@@ -1007,6 +1263,7 @@ let state = {
     { id: 'cat9', name: 'Diğer', icon: 'package', color: '#a1a1ba' },
   ],
   fixedExpenses: [],
+  planningItems: [],
   period: 'month',
   filterCat: 'all',
   monthlyBudget: 0
@@ -1021,72 +1278,6 @@ function loadState() {
   }
 }
 
-// ===================== INDEXEDDB FOR IMAGES =====================
-const DB_NAME = 'GelirGiderImages';
-const STORE_NAME = 'cat_images';
-let db;
-
-function initDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1);
-    request.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-    request.onsuccess = (e) => {
-      db = e.target.result;
-      resolve(db);
-    };
-    request.onerror = (e) => reject(e.target.error);
-  });
-}
-
-function saveImage(id, blob) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.put(blob, id);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
-
-function getImage(id) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.get(id);
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-function deleteImage(id) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.delete(id);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
-
-const imageCache = new Map();
-async function getImageUrl(catId) {
-  if (!catId) return null;
-  if (imageCache.has(catId)) return imageCache.get(catId);
-  
-  const blob = await getImage(catId);
-  if (blob) {
-    const url = URL.createObjectURL(blob);
-    imageCache.set(catId, url);
-    return url;
-  }
-  return null;
-}
-
 // ===================== UTILS =====================
 const fmt = (n) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 const fmtShort = (n) => {
@@ -1098,112 +1289,9 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 const today = () => new Date().toISOString().slice(0,10);
 const nowDate = () => new Date();
 
-async function preloadImages() {
-  const categories = state.categories.filter(c => c.hasImage);
-  for (const cat of categories) {
-    const blob = await getImage(cat.id);
-    if (blob) {
-      const url = URL.createObjectURL(blob);
-      imageCache.set(cat.id, url);
-    }
-  }
-}
-
-// ===================== EXPORT / IMPORT =====================
-function exportData() {
-  const data = JSON.stringify(state, null, 2);
-  const blob = new Blob([data], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `GelirGider_Yedek_${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-}
-
-function importData(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async (ev) => {
-    try {
-      const content = ev.target.result;
-      if (file.name.endsWith('.json')) {
-        const loaded = JSON.parse(content);
-        if (loaded.transactions && loaded.categories) {
-          state = { ...state, ...loaded };
-          saveState();
-          alert('Veriler başarıyla içe aktarıldı.');
-          renderApp();
-        } else {
-          alert('Geçersiz JSON formatı.');
-        }
-      } else if (file.name.endsWith('.csv')) {
-        parseCSV(content);
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Hata: Dosya okunamadı.');
-    }
-  };
-  reader.readAsText(file);
-}
-
-function parseCSV(content) {
-  const lines = content.split('\n').filter(l => l.trim());
-  if (lines.length < 2) return;
-  
-  // Simple CSV parser: Date, Type, Category, Amount, Note
-  // We assume the first line is header. 
-  const newTxs = [];
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-    if (cols.length < 4) continue;
-    
-    const date = cols[0] || today();
-    const type = cols[1].toLowerCase().includes('gelir') ? 'income' : 'expense';
-    const catName = cols[2];
-    const amount = parseFloat(cols[3]);
-    const note = cols[4] || '';
-    
-    if (isNaN(amount)) continue;
-    
-    let cat = state.categories.find(c => c.name.toLowerCase() === catName.toLowerCase());
-    if (!cat) cat = state.categories.find(c => c.id === 'cat9'); // Fallback to Diğer
-    
-    newTxs.push({
-      id: uid(),
-      type,
-      amount,
-      categoryId: cat.id,
-      note,
-      date: new Date(date).toISOString(),
-      createdAt: new Date().toISOString()
-    });
-  }
-  
-  if (newTxs.length > 0) {
-    if (confirm(`${newTxs.length} işlem bulundu. Mevcut verilere eklemek istiyor musunuz?`)) {
-      state.transactions = [...state.transactions, ...newTxs];
-      saveState();
-      renderApp();
-    }
-  }
-}
-
-function exportToCSV() {
-  const header = 'Tarih,Tip,Kategori,Tutar,Not\n';
-  const rows = state.transactions.map(t => {
-    const cat = getCatById(t.categoryId);
-    return `"${t.date.slice(0,10)}","${t.type==='income'?'Gelir':'Gider'}","${cat.name}","${t.amount}","${(t.note||'').replace(/"/g, '""')}"`;
-  }).join('\n');
-  
-  const blob = new Blob(['\ufeff' + header + rows], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `GelirGider_Rapor_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-}
+function getDateRange(period) {
+  const now = nowDate();
+  const d = new Date(now);
   if (period === 'day') {
     const s = new Date(d); s.setHours(0,0,0,0);
     const e = new Date(d); e.setHours(23,59,59,999);
@@ -1259,6 +1347,14 @@ function daysUntilPayment(dayOfMonth) {
 function formatDate(dateStr) {
   const d = new Date(dateStr);
   return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function formatTime(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+}
+function getDayName(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('tr-TR', { weekday: 'long' });
 }
 
 // triggers lucide icon parsing
@@ -1452,13 +1548,20 @@ let currentScreen = 'home';
 let addType = 'expense', addCatSelected = null;
 let editTxId = null;
 let editFixedId = null;
+let editCatId = null;
 let addCatImage = null; // for category custom image upload
+let addPlanImage = null; // for planning custom image upload
+
+// Calendar state
+let calMonth = new Date().getMonth();
+let calYear = new Date().getFullYear();
 
 // ===================== RENDER =====================
 function renderApp() {
   renderHome();
   renderTransactions();
   renderFixed();
+  renderPlanning();
   renderCategories();
   renderSettings();
   refreshIcons();
@@ -1474,6 +1577,13 @@ function renderHome() {
   document.getElementById('balance-amount').className = 'balance-amount ' + (balance >= 0 ? 'positive' : 'negative');
   document.getElementById('income-total').textContent = '₺' + fmt(income);
   document.getElementById('expense-total').textContent = '₺' + fmt(expense);
+
+  // Debt total calculation
+  const totalDebt = (state.fixedExpenses || []).filter(f => !f.isEnded && f.totalDebt > 0).reduce((s, f) => s + f.totalDebt, 0);
+  const debtEl = document.getElementById('debt-total');
+  if (debtEl) {
+    debtEl.textContent = '₺' + fmtShort(totalDebt);
+  }
 
   // Period tabs
   document.querySelectorAll('.period-tab').forEach(t => {
@@ -1494,14 +1604,18 @@ function renderHome() {
   });
   const catData = Object.entries(catMap).sort((a,b) => b[1]-a[1]).slice(0,5);
   const donutCanvas = document.getElementById('donut-chart');
-  drawDonut(donutCanvas, catData.map(c=>c[1]), catData.map(c => getCatById(c[0]).color));
+  if (donutCanvas) {
+    drawDonut(donutCanvas, catData.map(c=>c[1]), catData.map(c => getCatById(c[0]).color));
+  }
 
   // Donut legend
   const legend = document.getElementById('donut-legend');
-  legend.innerHTML = catData.length ? catData.map(([cid, val]) => {
-    const cat = getCatById(cid);
-    return `<div class="pie-legend-item"><div class="pie-dot" style="background:${cat.color}"></div><span>${cat.name}: <b style="color:var(--text-1)">₺${fmtShort(val)}</b></span></div>`;
-  }).join('') : '<span style="color:var(--text-3);font-size:12px">Kayıt yok</span>';
+  if (legend) {
+    legend.innerHTML = catData.length ? catData.map(([cid, val]) => {
+      const cat = getCatById(cid);
+      return `<div class="pie-legend-item"><div class="pie-dot" style="background:${cat.color}"></div><span>${cat.name}: <b style="color:var(--text-1)">₺${fmtShort(val)}</b></span></div>`;
+    }).join('') : '<span style="color:var(--text-3);font-size:12px">Kayıt yok</span>';
+  }
 
   // Bar chart - monthly per last 6 months
   const monthLabels = [], monthInc = [], monthExp = [];
@@ -1515,41 +1629,44 @@ function renderHome() {
     const tot = getTotals(txsM);
     monthLabels.push(label); monthInc.push(tot.income); monthExp.push(tot.expense);
   }
-  drawBarChart(document.getElementById('bar-chart'), monthLabels, monthInc, monthExp);
+  const barChartEl = document.getElementById('bar-chart');
+  if (barChartEl) drawBarChart(barChartEl, monthLabels, monthInc, monthExp);
 
   // Recent transactions
   const recentEl = document.getElementById('recent-txs');
-  const recent = [...state.transactions].sort((a,b) => new Date(b.date)-new Date(a.date)).slice(0,4);
-  recentEl.innerHTML = recent.length ? recent.map(tx => txHTML(tx)).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="receipt" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>İşlem bulunamadı</p></div>';
+  if (recentEl) {
+    const recent = [...state.transactions].sort((a,b) => new Date(b.date)-new Date(a.date)).slice(0,4);
+    recentEl.innerHTML = recent.length ? recent.map(tx => txHTML(tx)).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="receipt" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>İşlem bulunamadı</p></div>';
+  }
 
   // Insights
   const insightEl = document.getElementById('insights');
-  const insights = generateInsights(filterByPeriod(state.transactions, 'month'), filterByPeriod(state.transactions, 'day'));
-  insightEl.innerHTML = insights.map(i => `<div class="insight-chip ic-${i.color}"><i data-lucide="${i.icon}" style="width:14px;height:14px"></i> ${i.text}</div>`).join('');
+  if (insightEl) {
+    const insights = generateInsights(filterByPeriod(state.transactions, 'month'), filterByPeriod(state.transactions, 'day'));
+    insightEl.innerHTML = insights.map(i => `<div class="insight-chip ic-${i.color}"><i data-lucide="${i.icon}" style="width:14px;height:14px"></i> ${i.text}</div>`).join('');
+  }
 
   // Budget Progress
   const budEl = document.getElementById('budget-widget');
-  if (state.monthlyBudget > 0 && period === 'month') {
-    budEl.style.display = 'block';
-    const spentStr = fmt(expense);
-    const rem = state.monthlyBudget - expense;
-    const pct = Math.min(100, Math.round((expense / state.monthlyBudget) * 100));
-    
-    document.getElementById('budget-desc').textContent = `Kullanılan: %${pct}`;
-    const remEl = document.getElementById('budget-rem');
-    remEl.textContent = (rem >= 0 ? `₺${fmtShort(rem)} Kaldı` : `₺${fmtShort(Math.abs(rem))} Aşıldı`);
-    remEl.style.color = rem < 0 ? 'var(--red)' : 'var(--text-1)';
-    
-    const bar = document.getElementById('budget-bar');
-    setTimeout(() => {
-      bar.style.width = pct + '%';
-      bar.className = 'prog-fill ' + (pct >= 90 ? 'danger' : '');
-    }, 100);
-  } else {
-    budEl.style.display = 'none';
+  if (budEl) {
+    if (state.monthlyBudget > 0 && period === 'month') {
+      budEl.style.display = 'block';
+      const rem = state.monthlyBudget - expense;
+      const pct = Math.min(100, Math.round((expense / state.monthlyBudget) * 100));
+      document.getElementById('budget-desc').textContent = `Kullanılan: %${pct}`;
+      const remEl = document.getElementById('budget-rem');
+      remEl.textContent = (rem >= 0 ? `₺${fmtShort(rem)} Kaldı` : `₺${fmtShort(Math.abs(rem))} Aşıldı`);
+      remEl.style.color = rem < 0 ? 'var(--red)' : 'var(--text-1)';
+      const bar = document.getElementById('budget-bar');
+      setTimeout(() => { if(bar) { bar.style.width = pct + '%'; bar.className = 'prog-fill ' + (pct >= 90 ? 'danger' : ''); } }, 100);
+    } else {
+      budEl.style.display = 'none';
+    }
   }
 
+  renderCalendar('home-calendar-grid', 'home-calendar-title');
   renderFixedWarnings();
+  renderHomeFixed();
 }
 
 function generateInsights(txsMonth, txsDay) {
@@ -1577,11 +1694,9 @@ function txHTML(tx) {
   const cCls = isInc ? 'inc' : 'exp';
   const cSgn = isInc ? '+' : '-';
   const dateStr = formatDate(tx.date);
-  const imgUrl = imageCache.get(cat.id);
-  
   return `<div class="tx-item" onclick="openEditTx('${tx.id}')">
     <div class="tx-avatar" style="background:${cat.color}25;color:${cat.color}">
-      ${cat.hasImage && imgUrl ? `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:22px;height:22px"></i>`}
+      ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:22px;height:22px"></i>`}
     </div>
     <div class="tx-info">
       <div class="tx-name">${tx.note || cat.name}</div>
@@ -1592,6 +1707,7 @@ function txHTML(tx) {
       </div>
     </div>
     <div class="tx-amount ${cCls}">${cSgn}₺${fmtShort(tx.amount)}</div>
+    <div style="font-size:10px;color:var(--text-3);margin-left:8px;font-weight:700">${formatTime(tx.createdAt || tx.date)}</div>
   </div>`;
 }
 
@@ -1633,7 +1749,35 @@ function renderTransactions() {
   chipEl.innerHTML = filterOpts.map(f => `<div class="filter-chip ${state.filterCat===f.id?'active':''}" onclick="setFilter('${f.id}')"><i data-lucide="${f.icon}"></i> ${f.label}</div>`).join('');
 
   const listEl = document.getElementById('tx-list');
-  listEl.innerHTML = txs.length ? txs.map(tx => txHTML(tx)).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="ghost" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>Kayıt bulunamadı</p></div>';
+  if (txs.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="ghost" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>Kayıt bulunamadı</p></div>';
+  } else {
+    // Grouping logic
+    const groups = {};
+    txs.forEach(t => {
+      const d = t.date.slice(0,10);
+      if (!groups[d]) groups[d] = { txs: [], total: 0 };
+      groups[d].txs.push(t);
+      groups[d].total += (t.type === 'expense' ? -t.amount : t.amount);
+    });
+
+    let html = '';
+    Object.keys(groups).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
+      const g = groups[date];
+      const dateObj = new Date(date);
+      const isToday = date === today();
+      const label = isToday ? 'Bugün' : formatDate(date);
+      const dayName = getDayName(date);
+      html += `
+        <div class="tx-group-header">
+          <span>${label} <small style="margin-left:4px;opacity:0.6">${dayName}</small></span>
+          <span class="tx-group-total" style="color:${g.total>=0?'var(--green)':'var(--red)'}">${g.total>=0?'+':''}₺${fmtShort(g.total)}</span>
+        </div>
+        ${g.txs.map(tx => txHTML(tx)).join('')}
+      `;
+    });
+    listEl.innerHTML = html;
+  }
 
   // Line chart for spending trend
   const last7 = []; const last7labels = [];
@@ -1652,46 +1796,91 @@ function renderFixed() {
   const el = document.getElementById('fixed-list');
   const fixTotEl = document.getElementById('fixed-total');
   
-  const totalFixed = state.fixedExpenses.reduce((s,f)=>s+f.amount,0);
-  if (fixTotEl) fixTotEl.textContent = '₺' + fmt(totalFixed);
+  const activeFixed = state.fixedExpenses.filter(x => !x.isEnded);
+  const totalFixed = activeFixed.reduce((s,f)=>s+f.amount,0);
+  if (fixTotEl) fixTotEl.textContent = '₺' + totalFixed.toLocaleString();
   if (!el) return;
 
-  el.innerHTML = state.fixedExpenses.length ? state.fixedExpenses.map(f => {
+  const now = nowDate();
+  const currentMonthYear = now.toISOString().slice(0, 7);
+  const currentDay = now.getDate();
+
+  el.innerHTML = activeFixed.map(f => {
+    const cat = getCatById(f.categoryId);
+    const monthsDiff = getMonthsDiff(f.startDate || today(), today());
+    const isPaidThisMonth = f.paidMonths && f.paidMonths.includes(currentMonthYear);
+    
+    let displayAmount = f.amount;
+    let interestAdded = 0;
+    
+    if (f.dailyInterest && currentDay > f.payDay && !isPaidThisMonth) {
+      const daysOverdue = currentDay - f.payDay;
+      interestAdded = f.amount * (f.dailyInterest / 100) * daysOverdue;
+      displayAmount += interestAdded;
+    }
+
+    return `<div class="ultra-plan-card" style="${isPaidThisMonth ? 'border:1px solid var(--green); background:rgba(0,214,143,0.05)' : ''}">
+      <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+        <div class="tx-avatar" style="width:44px; height:44px; flex-shrink:0; border-radius:14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
+          ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px;color:${cat.color}"></i>`}
+        </div>
+        
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; padding: 2px 0;">
+          <div style="font-weight:900; font-size:15px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.4;">${f.name}</div>
+          <div style="font-size:11px; color:var(--text-3); font-weight:800; text-transform:uppercase; margin-top:6px; display:flex; justify-content:space-between; align-items:center; opacity:0.8; letter-spacing:0.3px;">
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%;">${cat.name}</span>
+            <span style="flex-shrink:0; margin-left:8px; opacity:0.5; font-size:10px;">${f.payDay}. GÜN</span>
+          </div>
+          ${interestAdded > 0 ? `<div class="interest-text" style="font-size:10px; margin-top:4px;"><i data-lucide="trending-up" style="width:11px; height:11px;"></i> +₺${interestAdded.toFixed(2)}</div>` : ''}
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; align-items:flex-end; margin: 0 10px; flex-shrink:0;">
+        <div style="font-weight:900; font-size:16px; color:var(--text-1)">₺${displayAmount.toLocaleString()}</div>
+        ${f.totalDebt ? `<div style="font-size:9px; font-weight:800; color:#ff9f43; margin-top:1px;">BORÇ: ₺${fmtShort(f.totalDebt)}</div>` : ''}
+      </div>
+
+      <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+        ${!isPaidThisMonth ? `<button class="btn-util" onclick="markFixedPaid('${f.id}')" style="color:var(--green); background:rgba(0,214,143,0.1); border:1px solid rgba(0,214,143,0.2);"><i data-lucide="check"></i></button>` : '<div class="fixed-paid-badge" style="padding:10px; background:var(--green)20; border-radius:12px;"><i data-lucide="check-circle" style="width:18px; height:18px; color:var(--green)"></i></div>'}
+        <button class="btn-fixed-end" onclick="endFixedPayment('${f.id}')" style="white-space:nowrap;"><i data-lucide="x-circle"></i> Bitir</button>
+        <button class="btn-util edit" onclick="openEditFixed('${f.id}')"><i data-lucide="pencil-line"></i></button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty-state">Sabit ödeme yok</div>';
+  
+  const catMap = {};
+  activeFixed.forEach(f => { catMap[f.categoryId] = (catMap[f.categoryId]||0) + f.amount; });
+  const chartEl = document.getElementById('fixed-chart');
+  if (chartEl && Object.keys(catMap).length > 0) {
+    drawBarChart(chartEl, Object.keys(catMap).map(id => getCatById(id).name), Object.values(catMap).map(()=>0), Object.values(catMap));
+  }
+}
+
+function renderHomeFixed() {
+  const el = document.getElementById('home-fixed-list');
+  if (!el) return;
+  const currentMonthYear = nowDate().toISOString().slice(0, 7);
+  el.innerHTML = state.fixedExpenses.filter(x => !x.isEnded).map(f => {
     const days = daysUntilPayment(f.payDay);
+    const isToday = days === 0;
     const isWarning = days <= 2;
     const cat = getCatById(f.categoryId);
-    return `<div class="card ${isWarning ? 'warning-blink' : ''}" style="${isWarning?'border:1.5px solid var(--red)':''}; margin-bottom:12px; cursor:default">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="tx-avatar" style="background:${cat.color}25;color:${cat.color}">
-          ${cat.hasImage && imageCache.get(cat.id) ? `<img src="${imageCache.get(cat.id)}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px"></i>`}
-        </div>
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:15px;color:var(--text-1)">${f.name}</div>
-          <div style="font-size:12px;color:var(--text-3);margin-top:2px">Ayın ${f.payDay}. günü</div>
-          <div style="font-size:12px;color:${isWarning?'var(--red)':'var(--text-2)'};font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px">
-            <i data-lucide="clock" style="width:12px;height:12px"></i> ${days} gün kaldı
-          </div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-weight:800;font-size:16px;color:var(--red);letter-spacing:-0.3px">₺${fmtShort(f.amount)}</div>
-          <button class="btn-util edit" onclick="openEditFixed('${f.id}')" style="margin-left:auto;margin-top:6px"><i data-lucide="pencil-line"></i></button>
+    const isPaid = f.paidMonths && f.paidMonths.includes(currentMonthYear);
+
+    return `<div class="ultra-plan-card ${isWarning && !isPaid ? 'warning-blink' : ''}" style="margin-right:12px; min-width:200px; opacity:${isPaid ? 0.6 : 1}">
+      <div class="tx-avatar" style="width:40px; height:40px; border-radius:12px;">
+        ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">` : `<i data-lucide="${cat.icon}" style="width:18px;height:18px;color:${cat.color}"></i>`}
+      </div>
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:800; font-size:13px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${f.name}</div>
+        <div style="font-size:15px; font-weight:900; color:var(--text-1); margin-top:2px;">₺${f.amount.toLocaleString()}</div>
+        <div style="font-size:9px; color:${isWarning && !isPaid ? 'var(--red)' : 'var(--text-3)'}; font-weight:800; text-transform:uppercase;">
+          ${isPaid ? 'ÖDENDİ' : (isToday ? 'BUGÜN' : days + ' GÜN')}
         </div>
       </div>
     </div>`;
-  }).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="calendar-off" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>Sabit ödeme yok</p></div>';
-
-  const catMap = {};
-  state.fixedExpenses.forEach(f => { catMap[f.categoryId] = (catMap[f.categoryId]||0) + f.amount; });
-  const chartEl = document.getElementById('fixed-chart');
-  if (chartEl) {
-    if (Object.keys(catMap).length > 0) {
-      const labels = Object.keys(catMap).map(id => getCatById(id).name);
-      const vals = Object.values(catMap);
-      drawBarChart(chartEl, labels, vals.map(()=>0), vals);
-    } else {
-      const ctx = chartEl.getContext('2d'); ctx.clearRect(0,0,chartEl.width,chartEl.height);
-    }
-  }
+  }).join('') || '<div class="empty-state">Sabit yok</div>';
+  refreshIcons();
 }
 
 function renderCategories() {
@@ -1699,18 +1888,17 @@ function renderCategories() {
   if (!el) return;
   el.innerHTML = state.categories.map(c => {
     const txCount = state.transactions.filter(t=>t.categoryId===c.id).length;
-    const imgUrl = imageCache.get(c.id);
     return `<div class="card" style="margin-bottom:12px;display:flex;align-items:center;gap:14px;padding:16px">
       <div class="tx-avatar" style="background:${c.color}25;color:${c.color}">
-        ${c.hasImage && imgUrl ? `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${c.icon}" style="width:20px;height:20px"></i>`}
+        ${c.image ? `<img src="${c.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${c.icon}" style="width:20px;height:20px"></i>`}
       </div>
       <div style="flex:1">
         <div style="font-weight:700;font-size:15px;color:var(--text-1)">${c.name}</div>
         <div style="font-size:12px;color:var(--text-3);margin-top:2px">${txCount} işlem</div>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="btn-util edit" onclick="openEditCat('${c.id}')" style="background:rgba(255,255,255,0.05);border:1px solid var(--border)"><i data-lucide="pencil" style="width:16px;height:16px"></i></button>
-        <button class="btn-util delete" onclick="deleteCat('${c.id}')" style="background:rgba(255,74,112,0.08);color:var(--red);border:1px solid rgba(255,74,112,0.2)"><i data-lucide="trash-2" style="width:16px;height:16px"></i></button>
+        <button class="btn-util edit" onclick="openEditCat('${c.id}')"><i data-lucide="pencil"></i></button>
+        <button class="btn-util del" onclick="deleteCat('${c.id}')"><i data-lucide="trash-2"></i></button>
       </div>
     </div>`;
   }).join('');
@@ -1738,6 +1926,7 @@ function showScreen(name) {
   if (name === 'home') renderHome();
   if (name === 'transactions') renderTransactions();
   if (name === 'fixed') renderFixed();
+  if (name === 'planning') renderPlanning();
   if (name === 'categories') renderCategories();
   if (name === 'settings') renderSettings();
   refreshIcons();
@@ -1783,7 +1972,7 @@ function renderCatChips() {
   const el = document.getElementById('add-cat-chips');
   el.innerHTML = state.categories.map(c => `
     <div class="cat-chip ${addCatSelected===c.id?'selected':''}" onclick="selectCat('${c.id}')" style="${addCatSelected===c.id?`border-color:${c.color};background:${c.color}25;color:${c.color}`:''}">
-      ${c.hasImage && imageCache.get(c.id) ? `<img src="${imageCache.get(c.id)}" style="width:16px;height:16px;border-radius:8px;object-fit:cover;margin-right:2px">` : `<i data-lucide="${c.icon}" style="width:14px;height:14px"></i>`}
+      ${c.image ? `<img src="${c.image}" style="width:16px;height:16px;border-radius:8px;object-fit:cover;margin-right:2px">` : `<i data-lucide="${c.icon}" style="width:14px;height:14px"></i>`}
       ${c.name}
     </div>
   `).join('');
@@ -1821,6 +2010,9 @@ function openFixedModal() {
   document.getElementById('fixed-name').value = '';
   document.getElementById('fixed-amount').value = '';
   document.getElementById('fixed-payday').value = '1';
+  document.getElementById('fixed-duration').value = '0';
+  document.getElementById('fixed-total-debt').value = '';
+  document.getElementById('fixed-interest').value = '';
   document.getElementById('fixed-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   document.getElementById('del-fixed-btn').style.display = 'none';
   document.getElementById('modal-fixed').classList.add('open');
@@ -1833,6 +2025,9 @@ function openEditFixed(id) {
   document.getElementById('fixed-name').value = f.name;
   document.getElementById('fixed-amount').value = f.amount;
   document.getElementById('fixed-payday').value = f.payDay;
+  document.getElementById('fixed-duration').value = f.duration || 0;
+  document.getElementById('fixed-total-debt').value = f.totalDebt || '';
+  document.getElementById('fixed-interest').value = f.dailyInterest || '';
   document.getElementById('fixed-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}" ${c.id===f.categoryId?'selected':''}>${c.name}</option>`).join('');
   document.getElementById('del-fixed-btn').style.display = 'flex';
   document.getElementById('modal-fixed').classList.add('open');
@@ -1841,14 +2036,17 @@ function saveFixed() {
   const name = document.getElementById('fixed-name').value.trim();
   const amount = parseFloat(document.getElementById('fixed-amount').value);
   const payDay = parseInt(document.getElementById('fixed-payday').value);
+  const duration = parseInt(document.getElementById('fixed-duration').value) || 0;
+  const totalDebt = parseFloat(document.getElementById('fixed-total-debt').value) || null;
+  const dailyInterest = parseFloat(document.getElementById('fixed-interest').value) || null;
   const categoryId = document.getElementById('fixed-cat-select').value;
   if (!name || !amount || !payDay) { alert('Lütfen tüm alanları doldurun.'); return; }
   
   if (editFixedId) {
     const idx = state.fixedExpenses.findIndex(x => x.id === editFixedId);
-    if (idx !== -1) state.fixedExpenses[idx] = { ...state.fixedExpenses[idx], name, amount, payDay, categoryId };
+    if (idx !== -1) state.fixedExpenses[idx] = { ...state.fixedExpenses[idx], name, amount, payDay, duration, totalDebt, dailyInterest, categoryId };
   } else {
-    state.fixedExpenses.push({ id: uid(), name, amount, payDay, categoryId, createdAt: new Date().toISOString() });
+    state.fixedExpenses.push({ id: uid(), name, amount, payDay, duration, totalDebt, dailyInterest, categoryId, startDate: today(), createdAt: new Date().toISOString(), paidMonths: [], isEnded: false });
   }
   saveState(); closeModal('modal-fixed'); renderFixed(); renderHome();
 }
@@ -1860,34 +2058,31 @@ function deleteFixed(id) {
   saveState(); if(!id) closeModal('modal-fixed'); renderFixed(); renderHome();
 }
 
-// ===================== CATEGORY MODAL & IMAGE =====================
-let addCatBlob = null;
-let editCatId = null;
-
-async function handleCatImage(e) {
+// ===================== CATEGORY MODAL & IMAGE COMPRESSION =====================
+function handleCatImage(e) {
   const file = e.target.files[0];
   if (!file) return;
-  
-  const size = 512; 
   const reader = new FileReader();
   reader.onload = (ev) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const min = Math.min(img.width, img.height);
+      const size = 128; // WebP, 128x128 max is ~2-4KB. Very safe for localStorage.
       canvas.width = size; canvas.height = size;
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, (img.width-min)/2, (img.height-min)/2, min, min, 0, 0, size, size);
+      // Crop to center square
+      const minData = Math.min(img.width, img.height);
+      const sx = (img.width - minData) / 2;
+      const sy = (img.height - minData) / 2;
+      ctx.drawImage(img, sx, sy, minData, minData, 0, 0, size, size);
       
-      canvas.toBlob((blob) => {
-        addCatBlob = blob;
-        const url = URL.createObjectURL(blob);
-        const p = document.getElementById('cat-img-preview');
-        p.style.display = 'flex';
-        p.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
-        document.getElementById('cat-img-remove').style.display = 'flex';
-        document.getElementById('cat-icon-in').disabled = true;
-      }, 'image/webp', 0.90);
+      addCatImage = canvas.toDataURL('image/webp', 0.85);
+      
+      const p = document.getElementById('cat-img-preview');
+      p.style.display = 'flex';
+      p.innerHTML = `<img src="${addCatImage}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+      document.getElementById('cat-img-remove').style.display = 'flex';
+      document.getElementById('cat-icon-in').disabled = true; // disable icon if image is used
     };
     img.src = ev.target.result;
   };
@@ -1895,7 +2090,7 @@ async function handleCatImage(e) {
 }
 
 function removeCatImage() {
-  addCatBlob = null;
+  addCatImage = null;
   document.getElementById('cat-img-in').value = '';
   document.getElementById('cat-img-preview').style.display = 'none';
   document.getElementById('cat-img-remove').style.display = 'none';
@@ -1904,35 +2099,33 @@ function removeCatImage() {
 
 function openCatModal() {
   editCatId = null;
-  document.getElementById('modal-cat-title').textContent = 'Kategori Ekle';
+  document.getElementById('modal-cat').querySelector('.modal-title').textContent = 'Yeni Kategori';
   document.getElementById('cat-name-in').value = '';
-  document.getElementById('cat-icon-in').value = 'package'; 
+  document.getElementById('cat-icon-in').value = 'package'; // default lucide icon
   removeCatImage();
   document.getElementById('modal-cat').classList.add('open');
 }
 
-async function openEditCat(id) {
+function openEditCat(id) {
   const cat = state.categories.find(c => c.id === id);
   if (!cat) return;
   editCatId = id;
-  document.getElementById('modal-cat-title').textContent = 'Kategoriyi Düzenle';
+  document.getElementById('modal-cat').querySelector('.modal-title').textContent = 'Kategoriyi Düzenle';
   document.getElementById('cat-name-in').value = cat.name;
   document.getElementById('cat-icon-in').value = cat.icon;
   removeCatImage();
-  
-  if (cat.hasImage && imageCache.has(id)) {
-    const url = imageCache.get(id);
+  if (cat.image) {
+    addCatImage = cat.image;
     const p = document.getElementById('cat-img-preview');
     p.style.display = 'flex';
-    p.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+    p.innerHTML = `<img src="${addCatImage}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
     document.getElementById('cat-img-remove').style.display = 'flex';
     document.getElementById('cat-icon-in').disabled = true;
   }
-  
   document.getElementById('modal-cat').classList.add('open');
 }
 
-async function saveCat() {
+function saveCat() {
   const name = document.getElementById('cat-name-in').value.trim();
   const icon = document.getElementById('cat-icon-in').value.trim() || 'package';
   if (!name) return;
@@ -1940,29 +2133,16 @@ async function saveCat() {
   if (editCatId) {
     const idx = state.categories.findIndex(c => c.id === editCatId);
     if (idx !== -1) {
-      const existing = state.categories[idx];
-      state.categories[idx] = { ...existing, name, icon, hasImage: addCatBlob || existing.hasImage, color: window.newCatColor || existing.color };
-      if (addCatBlob) {
-        await saveImage(editCatId, addCatBlob);
-        const url = URL.createObjectURL(addCatBlob);
-        imageCache.set(editCatId, url);
-      }
+      state.categories[idx] = { ...state.categories[idx], name, icon, image: addCatImage, color: window.newCatColor || state.categories[idx].color };
     }
   } else {
-    const id = uid();
-    const category = { id, name, icon, hasImage: !!addCatBlob, color: window.newCatColor || '#00d68f' };
-    if (addCatBlob) {
-      await saveImage(id, addCatBlob);
-      const url = URL.createObjectURL(addCatBlob);
-      imageCache.set(id, url);
-    }
-    state.categories.push(category);
+    state.categories.push({ id: uid(), name, icon, image: addCatImage, color: window.newCatColor || '#00d68f' });
   }
   
   saveState(); 
   closeModal('modal-cat'); 
   renderCategories();
-  renderApp();
+  renderApp(); // Ensure other screens update too
 }
 function deleteCat(id) {
   if (!confirm('Kategoriyi silmek istiyor musunuz? İlgili işlemler "Diğer" kategorisine aktarılır.')) return;
@@ -1970,6 +2150,267 @@ function deleteCat(id) {
   state.transactions = state.transactions.map(t => t.categoryId===id ? {...t, categoryId:'cat9'} : t);
   saveState(); renderCategories(); renderApp();
 }
+
+// ===================== PLANNING & CALENDAR =====================
+function renderPlanning() {
+  const el = document.getElementById('planning-list');
+  if (!el) return;
+
+  // Render list
+  const items = [...state.planningItems].sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
+  
+  el.innerHTML = items.length ? items.map(p => {
+    const cat = getCatById(p.categoryId);
+    const now = nowDate();
+    now.setHours(0,0,0,0);
+    
+    let targetDate = new Date(p.dueDate);
+    if (p.isRecurring) {
+      const pDay = targetDate.getDate();
+      targetDate = new Date(now.getFullYear(), now.getMonth(), pDay);
+      if (now.getDate() > pDay) {
+        targetDate.setMonth(targetDate.getMonth() + 1);
+      }
+    }
+    
+    const diff = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
+    const isToday = diff === 0;
+    const isTomorrow = diff === 1;
+    const isWarning = diff <= 1;
+
+    return `<div class="ultra-plan-card ${diff <= 1 ? 'urgent plan-neon-red' : 'plan-neon-green'}">
+      <div class="tx-avatar" style="width:48px; height:48px; border-radius:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06);">
+        ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:22px;height:22px; color:${cat.color}; filter: drop-shadow(0 0 6px ${cat.color}50);"></i>`}
+      </div>
+      
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:900; font-size:16px; color:var(--text-1); letter-spacing:-0.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
+        <div style="font-size:10px; color:var(--text-3); font-weight:800; text-transform:uppercase; letter-spacing:0.8px; margin-top:2px;">${cat.name}</div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+        <div class="plan-date-viz">
+          ${p.isRecurring ? `Aylık` : formatDate(p.dueDate).slice(0,6)}
+        </div>
+        <div class="plan-countdown-viz">
+          <div class="countdown-num" style="font-size:18px;">${isToday ? '0' : diff}</div>
+          <div class="countdown-label" style="font-size:7px;">GÜN</div>
+        </div>
+      </div>
+
+      <button class="btn-util edit" onclick="openEditPlanning('${p.id}')" style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+        <i data-lucide="pencil-line" style="width:18px; height:18px;"></i>
+      </button>
+    </div>`;
+  }).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="calendar-plus" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>Planlanan ödeme yok</p></div>';
+
+  renderCalendar('plan-calendar-grid', 'plan-calendar-title');
+  refreshIcons();
+}
+
+function renderCalendar(gridId, titleId) {
+  const grid = document.getElementById(gridId);
+  const title = document.getElementById(titleId);
+  if (!grid || !title) return;
+
+  const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+  title.textContent = `${monthNames[calMonth]} ${calYear}`;
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const offset = firstDay === 0 ? 6 : firstDay - 1;
+
+  let html = '';
+  const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+  days.forEach(d => html += `<div class="calendar-day-label">${d}</div>`);
+
+  for (let i = 0; i < offset; i++) html += `<div></div>`;
+
+  const now = new Date();
+  now.setHours(0,0,0,0);
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const isToday = now.getFullYear() === calYear && now.getMonth() === calMonth && now.getDate() === d;
+    
+    // Check for events (direct or recurring)
+    const dayEvents = state.planningItems.filter(p => {
+      const pDate = new Date(p.dueDate);
+      return p.dueDate === dateStr || (p.isRecurring && pDate.getDate() === d);
+    });
+    
+    const hasEvent = dayEvents.length > 0;
+    
+    // Check for alerts (tomorrow or today)
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+    const todayStr = now.toISOString().slice(0, 10);
+    
+    const isAlert = dayEvents.some(p => {
+      if (!p.isRecurring) return p.dueDate === tomorrowStr || p.dueDate === todayStr;
+      const pDay = new Date(p.dueDate).getDate();
+      return pDay === tomorrow.getDate() || pDay === now.getDate();
+    });
+
+    html += `
+      <div class="calendar-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}" onclick="openPlanDayDetail('${dateStr}')">
+        ${d}
+        ${hasEvent ? `<div class="day-event-dot" style="${dayEvents.length > 1 ? 'width:12px; border-radius:4px' : ''}"></div>` : ''}
+        ${isAlert ? `<div class="day-event-alert"></div>` : ''}
+      </div>
+    `;
+  }
+
+  grid.innerHTML = html;
+}
+
+function openPlanDayDetail(dateStr) {
+  const dObj = new Date(dateStr);
+  const day = dObj.getDate();
+  const dayName = getDayName(dateStr);
+  const title = document.getElementById('plan-detail-title');
+  const list = document.getElementById('plan-detail-list');
+
+  title.innerHTML = `<div style="font-size:14px; opacity:0.6; margin-bottom:4px;">${dayName}</div> ${day} ${title.innerText.split(' ').pop()}`;
+  
+  const events = state.planningItems.filter(p => {
+    const pDate = new Date(p.dueDate);
+    return p.dueDate === dateStr || (p.isRecurring && pDate.getDate() === day);
+  });
+
+  if (events.length === 0) {
+    list.innerHTML = '<div class="empty-state">Bu güne ait planlı ödeme bulunmuyor.</div>';
+  } else {
+    list.innerHTML = events.map(p => {
+      const cat = getCatById(p.categoryId);
+      return `
+        <div class="card" style="margin-bottom:12px; padding:16px;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div class="tx-avatar" style="background:${cat.color}15; color:${cat.color}">
+              ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px"></i>`}
+            </div>
+            <div style="flex:1">
+              <div style="font-weight:800; font-size:16px; color:var(--text-1)">${p.name}</div>
+              <div style="font-size:12px; color:var(--text-3); font-weight:600;">${cat.name} ${p.isRecurring ? '(Aylık Tekrarlı)' : ''}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    refreshIcons();
+  }
+  
+  document.getElementById('modal-plan-day-detail').classList.add('open');
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar('home-calendar-grid', 'home-calendar-title');
+  renderCalendar('plan-calendar-grid', 'plan-calendar-title');
+}
+
+function togglePlanRecurring() {
+  const chk = document.getElementById('plan-recurring');
+  chk.checked = !chk.checked;
+  document.getElementById('plan-recurring-toggle').classList.toggle('on', chk.checked);
+}
+
+function openPlanningModal() {
+  editPlanningId = null;
+  document.getElementById('modal-planning-title').textContent = 'Planlı Ödeme Ekle';
+  document.getElementById('plan-name').value = '';
+  document.getElementById('plan-date').value = today();
+  document.getElementById('plan-recurring').checked = false;
+  document.getElementById('plan-recurring-toggle').classList.remove('on');
+  document.getElementById('plan-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  removePlanImage();
+  document.getElementById('del-plan-btn').style.display = 'none';
+  document.getElementById('modal-planning').classList.add('open');
+}
+
+function openEditPlanning(id) {
+  const p = state.planningItems.find(x => x.id === id);
+  if (!p) return;
+  editPlanningId = id;
+  document.getElementById('modal-planning-title').textContent = 'Ödemeyi Düzenle';
+  document.getElementById('plan-name').value = p.name;
+  document.getElementById('plan-date').value = p.dueDate;
+  document.getElementById('plan-recurring').checked = p.isRecurring || false;
+  document.getElementById('plan-recurring-toggle').classList.toggle('on', p.isRecurring);
+  document.getElementById('plan-cat-select').innerHTML = state.categories.map(c => `<option value="${c.id}" ${c.id===p.categoryId?'selected':''}>${c.name}</option>`).join('');
+  removePlanImage();
+  if (p.image) {
+    addPlanImage = p.image;
+    const prev = document.getElementById('plan-img-preview');
+    prev.style.display = 'flex';
+    prev.innerHTML = `<img src="${addPlanImage}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+    document.getElementById('plan-img-remove').style.display = 'flex';
+  }
+  document.getElementById('del-plan-btn').style.display = 'flex';
+  document.getElementById('modal-planning').classList.add('open');
+}
+
+function savePlanning() {
+  const name = document.getElementById('plan-name').value.trim();
+  const dueDate = document.getElementById('plan-date').value;
+  const isRecurring = document.getElementById('plan-recurring').checked;
+  const categoryId = document.getElementById('plan-cat-select').value;
+  if (!name || !dueDate) { alert('Lütfen tüm alanları doldurun.'); return; }
+
+  if (editPlanningId) {
+    const idx = state.planningItems.findIndex(x => x.id === editPlanningId);
+    if (idx !== -1) state.planningItems[idx] = { ...state.planningItems[idx], name, dueDate, isRecurring, categoryId, image: addPlanImage };
+  } else {
+    state.planningItems.push({ id: uid(), name, dueDate, isRecurring, categoryId, image: addPlanImage, createdAt: new Date().toISOString() });
+  }
+  
+  saveState(); closeModal('modal-planning'); renderApp();
+}
+
+function deletePlanning() {
+  if (!editPlanningId) return;
+  if (!confirm('Bu planlı ödemeyi silmek istiyor musunuz?')) return;
+  state.planningItems = state.planningItems.filter(p => p.id !== editPlanningId);
+  saveState(); closeModal('modal-planning'); renderApp();
+}
+
+function handlePlanImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const size = 128;
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const minData = Math.min(img.width, img.height);
+      const sx = (img.width - minData) / 2;
+      const sy = (img.height - minData) / 2;
+      ctx.drawImage(img, sx, sy, minData, minData, 0, 0, size, size);
+      addPlanImage = canvas.toDataURL('image/webp', 0.85);
+      const p = document.getElementById('plan-img-preview');
+      p.style.display = 'flex';
+      p.innerHTML = `<img src="${addPlanImage}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+      document.getElementById('plan-img-remove').style.display = 'flex';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePlanImage() {
+  addPlanImage = null;
+  document.getElementById('plan-img-in').value = '';
+  document.getElementById('plan-img-preview').style.display = 'none';
+  document.getElementById('plan-img-remove').style.display = 'none';
+}
+
+let editPlanningId = null;
 
 function openCatDetail(catId) {
   const cat = getCatById(catId);
@@ -2023,36 +2464,51 @@ function exportCSV() {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'gelir-gider.csv'; a.click();
 }
 
-function exportData() {
-  const data = JSON.stringify(state);
-  const blob = new Blob([data], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'data.json'; a.click();
-}
-
-function importData(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    state = JSON.parse(ev.target.result);
-    saveState(); renderApp();
-  };
-  reader.readAsText(file);
-}
-
-async function preloadImages() {
-  for (const cat of state.categories) {
-    if (cat.hasImage) {
-      const blob = await getImage(cat.id);
-      if (blob) imageCache.set(cat.id, URL.createObjectURL(blob));
-    }
-  }
-}
-
 function clearAllData() {
   if (!confirm('TÜM VERİLER SİLİNECEK! Onaylıyor musunuz?')) return;
   state.transactions = []; state.fixedExpenses = [];
   saveState(); renderApp();
+}
+
+// ===================== HELPERS =====================
+function getMonthsDiff(startStr, endStr) {
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+}
+
+function markFixedPaid(id) {
+  const f = state.fixedExpenses.find(x => x.id === id);
+  if (!f) return;
+  const currentMonthYear = nowDate().toISOString().slice(0, 7);
+  if (!f.paidMonths) f.paidMonths = [];
+  if (f.paidMonths.includes(currentMonthYear)) return;
+  
+  // Calculate current amount (with interest if overdue)
+  let finalAmount = f.amount;
+  const currentDay = nowDate().getDate();
+  if (f.dailyInterest && currentDay > f.payDay) {
+    const daysOverdue = currentDay - f.payDay;
+    finalAmount += f.amount * (f.dailyInterest / 100) * daysOverdue;
+  }
+
+  f.paidMonths.push(currentMonthYear);
+  if (f.totalDebt) f.totalDebt = Math.max(0, f.totalDebt - f.amount); // Subtract base amount from debt
+
+  // Also add to transactions
+  state.transactions.push({ 
+    id: uid(), type: 'expense', amount: finalAmount, categoryId: f.categoryId, 
+    note: `${f.name} (Sabit Ödeme)`, date: today(), createdAt: new Date().toISOString() 
+  });
+
+  saveState(); renderFixed(); renderHome(); renderTransactions();
+}
+
+function endFixedPayment(id) {
+  if (!confirm('Bu ödeme planını tamamen bitirmek istediğinize emin misiniz? Gelecek aylarda görünmeyecektir.')) return;
+  const f = state.fixedExpenses.find(x => x.id === id);
+  if (f) f.isEnded = true;
+  saveState(); renderFixed(); renderHome();
 }
 
 // ===================== INIT =====================
@@ -2077,7 +2533,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-</script>
+</script></script>
 <script>
 // Init Lucide icons (after DOM + app.js load)
 function initIcons() { if (window.lucide) lucide.createIcons(); }
@@ -2094,16 +2550,17 @@ setInterval(() => {
   initIcons();
 }, 2500);
 
+// Auto-reload on version change
+const VER = '1.8.4';
+if (localStorage.getItem('app_v') !== VER) {
+  localStorage.setItem('app_v', VER);
+  window.location.reload(true);
+}
+
 window.addEventListener('resize', () => {
   if (currentScreen === 'home') renderHome();
   if (currentScreen === 'transactions') renderTransactions();
 });
-
-setInterval(() => {
-  const el = document.getElementById('tx-count-label');
-  if (el) el.textContent = (state?.transactions?.length || 0) + ' işlem';
-  initIcons();
-}, 2500);
 </script>
 </body>
 </html>
