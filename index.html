@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.7.0">
+<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.8.0">
 <meta name="theme-color" content="#07070f">
 <title>Gelir·Gider – Bekir ATEŞ</title>
-<link rel="stylesheet" href="styles.css?v=1.7.0">
+<link rel="stylesheet" href="styles.css?v=1.8.0">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="app_icon_512.png">
 <!-- Lucide Icons -->
@@ -88,20 +88,18 @@
         <div class="prog-track"><div class="prog-fill" id="budget-bar" style="width:0%"></div></div>
       </div>
 
-      <div class="balance-row">
-        <div class="balance-pill">
-          <div class="balance-pill-head">
-            <i data-lucide="arrow-up-right" style="color:var(--green);stroke-width:2.5"></i>
-            <span class="balance-pill-label">Gelir</span>
-          </div>
-          <div class="balance-pill-val" id="income-total" style="color:var(--text-1)">₺0,00</div>
+      <div class="balance-grid">
+        <div class="balance-item">
+          <span class="balance-label"><i data-lucide="trending-up"></i> Gelir</span>
+          <span class="balance-val" id="income-total">₺0</span>
         </div>
-        <div class="balance-pill">
-          <div class="balance-pill-head">
-            <i data-lucide="arrow-down-right" style="color:var(--red);stroke-width:2.5"></i>
-            <span class="balance-pill-label">Gider</span>
-          </div>
-          <div class="balance-pill-val" id="expense-total" style="color:var(--text-1)">₺0,00</div>
+        <div class="balance-item">
+          <span class="balance-label"><i data-lucide="trending-down"></i> Gider</span>
+          <span class="balance-val" id="expense-total">₺0</span>
+        </div>
+        <div class="balance-item">
+          <span class="balance-label"><i data-lucide="piggy-bank"></i> Borç</span>
+          <span class="balance-val" id="debt-total" style="color:#ff9f43">₺0</span>
         </div>
       </div>
     </div>
@@ -662,7 +660,7 @@
     });
   }
 </script>
-<script src="app.js?v=1.7.0"></script>
+<script src="app.js?v=1.8.0"></script>
 <script>
 // Init Lucide icons (after DOM + app.js load)
 function initIcons() { if (window.lucide) lucide.createIcons(); }

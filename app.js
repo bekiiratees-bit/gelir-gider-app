@@ -330,6 +330,13 @@ function renderHome() {
   document.getElementById('income-total').textContent = '₺' + fmt(income);
   document.getElementById('expense-total').textContent = '₺' + fmt(expense);
 
+  // Debt total calculation
+  const totalDebt = (state.fixedExpenses || []).filter(f => !f.isEnded && f.totalDebt > 0).reduce((s, f) => s + f.totalDebt, 0);
+  const debtEl = document.getElementById('debt-total');
+  if (debtEl) {
+    debtEl.textContent = '₺' + fmtShort(totalDebt);
+  }
+
   // Period tabs
   document.querySelectorAll('.period-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.period === period);
@@ -349,14 +356,18 @@ function renderHome() {
   });
   const catData = Object.entries(catMap).sort((a,b) => b[1]-a[1]).slice(0,5);
   const donutCanvas = document.getElementById('donut-chart');
-  drawDonut(donutCanvas, catData.map(c=>c[1]), catData.map(c => getCatById(c[0]).color));
+  if (donutCanvas) {
+    drawDonut(donutCanvas, catData.map(c=>c[1]), catData.map(c => getCatById(c[0]).color));
+  }
 
   // Donut legend
   const legend = document.getElementById('donut-legend');
-  legend.innerHTML = catData.length ? catData.map(([cid, val]) => {
-    const cat = getCatById(cid);
-    return `<div class="pie-legend-item"><div class="pie-dot" style="background:${cat.color}"></div><span>${cat.name}: <b style="color:var(--text-1)">₺${fmtShort(val)}</b></span></div>`;
-  }).join('') : '<span style="color:var(--text-3);font-size:12px">Kayıt yok</span>';
+  if (legend) {
+    legend.innerHTML = catData.length ? catData.map(([cid, val]) => {
+      const cat = getCatById(cid);
+      return `<div class="pie-legend-item"><div class="pie-dot" style="background:${cat.color}"></div><span>${cat.name}: <b style="color:var(--text-1)">₺${fmtShort(val)}</b></span></div>`;
+    }).join('') : '<span style="color:var(--text-3);font-size:12px">Kayıt yok</span>';
+  }
 
   // Bar chart - monthly per last 6 months
   const monthLabels = [], monthInc = [], monthExp = [];
@@ -370,38 +381,39 @@ function renderHome() {
     const tot = getTotals(txsM);
     monthLabels.push(label); monthInc.push(tot.income); monthExp.push(tot.expense);
   }
-  drawBarChart(document.getElementById('bar-chart'), monthLabels, monthInc, monthExp);
+  const barChartEl = document.getElementById('bar-chart');
+  if (barChartEl) drawBarChart(barChartEl, monthLabels, monthInc, monthExp);
 
   // Recent transactions
   const recentEl = document.getElementById('recent-txs');
-  const recent = [...state.transactions].sort((a,b) => new Date(b.date)-new Date(a.date)).slice(0,4);
-  recentEl.innerHTML = recent.length ? recent.map(tx => txHTML(tx)).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="receipt" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>İşlem bulunamadı</p></div>';
+  if (recentEl) {
+    const recent = [...state.transactions].sort((a,b) => new Date(b.date)-new Date(a.date)).slice(0,4);
+    recentEl.innerHTML = recent.length ? recent.map(tx => txHTML(tx)).join('') : '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="receipt" style="width:40px;height:40px;color:var(--text-3);stroke-width:1.5"></i></div><p>İşlem bulunamadı</p></div>';
+  }
 
   // Insights
   const insightEl = document.getElementById('insights');
-  const insights = generateInsights(filterByPeriod(state.transactions, 'month'), filterByPeriod(state.transactions, 'day'));
-  insightEl.innerHTML = insights.map(i => `<div class="insight-chip ic-${i.color}"><i data-lucide="${i.icon}" style="width:14px;height:14px"></i> ${i.text}</div>`).join('');
+  if (insightEl) {
+    const insights = generateInsights(filterByPeriod(state.transactions, 'month'), filterByPeriod(state.transactions, 'day'));
+    insightEl.innerHTML = insights.map(i => `<div class="insight-chip ic-${i.color}"><i data-lucide="${i.icon}" style="width:14px;height:14px"></i> ${i.text}</div>`).join('');
+  }
 
   // Budget Progress
   const budEl = document.getElementById('budget-widget');
-  if (state.monthlyBudget > 0 && period === 'month') {
-    budEl.style.display = 'block';
-    const spentStr = fmt(expense);
-    const rem = state.monthlyBudget - expense;
-    const pct = Math.min(100, Math.round((expense / state.monthlyBudget) * 100));
-    
-    document.getElementById('budget-desc').textContent = `Kullanılan: %${pct}`;
-    const remEl = document.getElementById('budget-rem');
-    remEl.textContent = (rem >= 0 ? `₺${fmtShort(rem)} Kaldı` : `₺${fmtShort(Math.abs(rem))} Aşıldı`);
-    remEl.style.color = rem < 0 ? 'var(--red)' : 'var(--text-1)';
-    
-    const bar = document.getElementById('budget-bar');
-    setTimeout(() => {
-      bar.style.width = pct + '%';
-      bar.className = 'prog-fill ' + (pct >= 90 ? 'danger' : '');
-    }, 100);
-  } else {
-    budEl.style.display = 'none';
+  if (budEl) {
+    if (state.monthlyBudget > 0 && period === 'month') {
+      budEl.style.display = 'block';
+      const rem = state.monthlyBudget - expense;
+      const pct = Math.min(100, Math.round((expense / state.monthlyBudget) * 100));
+      document.getElementById('budget-desc').textContent = `Kullanılan: %${pct}`;
+      const remEl = document.getElementById('budget-rem');
+      remEl.textContent = (rem >= 0 ? `₺${fmtShort(rem)} Kaldı` : `₺${fmtShort(Math.abs(rem))} Aşıldı`);
+      remEl.style.color = rem < 0 ? 'var(--red)' : 'var(--text-1)';
+      const bar = document.getElementById('budget-bar');
+      setTimeout(() => { if(bar) { bar.style.width = pct + '%'; bar.className = 'prog-fill ' + (pct >= 90 ? 'danger' : ''); } }, 100);
+    } else {
+      budEl.style.display = 'none';
+    }
   }
 
   renderCalendar('home-calendar-grid', 'home-calendar-title');
@@ -559,37 +571,26 @@ function renderFixed() {
       displayAmount += interestAdded;
     }
 
-    return `<div class="card" style="margin-bottom:16px; padding:20px; ${isPaidThisMonth ? 'border:1px solid var(--green); background:rgba(0,214,143,0.02)' : ''}">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div class="tx-avatar" style="background:${cat.color}20; color:${cat.color}; border:1px solid ${cat.color}30;">
-            <i data-lucide="${cat.icon}"></i>
-          </div>
-          <div>
-            <div style="font-weight:900; font-size:16px; color:var(--text-1)">${f.name}</div>
-            <div style="font-size:12px; color:var(--text-3); font-weight:700;">Her ayın ${f.payDay}. günü</div>
-          </div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-weight:900; font-size:18px; color:${interestAdded > 0 ? '#ff9f43' : 'var(--text-1)'}">₺${displayAmount.toLocaleString()}</div>
-          ${interestAdded > 0 ? `<div class="interest-text"><i data-lucide="trending-up" style="width:12px; height:12px;"></i> +₺${interestAdded.toFixed(2)} Faiz</div>` : ''}
-        </div>
+    return `<div class="ultra-plan-card" style="${isPaidThisMonth ? 'border:1px solid var(--green); background:rgba(0,214,143,0.05)' : ''}">
+      <div class="tx-avatar" style="width:48px; height:48px; border-radius:14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
+        ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : `<i data-lucide="${cat.icon}" style="width:20px;height:20px;color:${cat.color}"></i>`}
+      </div>
+      
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:900; font-size:15px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${f.name}</div>
+        <div style="font-size:10px; color:var(--text-3); font-weight:800; text-transform:uppercase;">${cat.name} • ${f.payDay}. gün</div>
+        ${interestAdded > 0 ? `<div class="interest-text" style="font-size:9px;"><i data-lucide="trending-up" style="width:10px; height:10px;"></i> +₺${interestAdded.toFixed(2)}</div>` : ''}
       </div>
 
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <div style="font-size:11px; font-weight:800; color:var(--text-3); text-transform:uppercase;">
-            ${f.duration > 0 ? `Vade: ${monthsDiff} / ${f.duration} Ay` : 'SÜRESİZ ÖDEME'}
-          </div>
-          ${f.totalDebt ? `<div style="font-size:11px; font-weight:800; color:var(--text-2);">TOPLAM BORÇ: ₺${f.totalDebt.toLocaleString()}</div>` : ''}
-        </div>
-        ${isPaidThisMonth ? `<div class="fixed-paid-badge"><i data-lucide="check-circle" style="width:12px; height:12px;"></i> ÖDENDİ</div>` : ''}
+      <div style="display:flex; flex-direction:column; align-items:flex-end;">
+        <div style="font-weight:900; font-size:16px; color:var(--text-1)">₺${displayAmount.toLocaleString()}</div>
+        ${f.totalDebt ? `<div style="font-size:9px; font-weight:800; color:#ff9f43;">BORÇ: ₺${fmtShort(f.totalDebt)}</div>` : ''}
       </div>
 
-      <div style="display:flex; gap:8px; margin-top:16px;">
-        ${!isPaidThisMonth ? `<button class="btn-fixed-pay" style="flex:2" onclick="markFixedPaid('${f.id}')"><i data-lucide="crosshair"></i> Ödeme Sağlandı</button>` : `<button class="btn-fixed-pay disabled" style="flex:2" disabled><i data-lucide="check"></i> Ay Ödemesi Tamam</button>`}
-        <button class="btn-fixed-end" style="flex:1" onclick="endFixedPayment('${f.id}')"><i data-lucide="x-circle"></i> Bitir</button>
-        <button class="btn-util edit" style="width:44px; height:44px;" onclick="openEditFixed('${f.id}')"><i data-lucide="pencil-line"></i></button>
+      <div style="display:flex; gap:6px; margin-left:10px;">
+        ${!isPaidThisMonth ? `<button class="btn-util" onclick="markFixedPaid('${f.id}')" style="color:var(--green); background:rgba(0,214,143,0.1); border:1px solid rgba(0,214,143,0.2);"><i data-lucide="check"></i></button>` : '<div class="fixed-paid-badge" style="padding:8px;"><i data-lucide="check-circle" style="width:16px; height:16px;"></i></div>'}
+        <button class="btn-fixed-end" onclick="endFixedPayment('${f.id}')"><i data-lucide="x-circle"></i> Bitir</button>
+        <button class="btn-util edit" onclick="openEditFixed('${f.id}')"><i data-lucide="pencil-line"></i></button>
       </div>
     </div>`;
   }).join('') || '<div class="empty-state">Sabit ödeme yok</div>';
@@ -613,16 +614,16 @@ function renderHomeFixed() {
     const cat = getCatById(f.categoryId);
     const isPaid = f.paidMonths && f.paidMonths.includes(currentMonthYear);
 
-    return `<div class="card ${isWarning && !isPaid ? 'warning-blink' : ''}" style="margin-right:12px; min-width:180px; padding:16px; opacity:${isPaid ? 0.6 : 1}">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div class="tx-avatar" style="width:36px;height:36px;background:${cat.color}25;color:${cat.color}">
-          <i data-lucide="${cat.icon}" style="width:18px;height:18px"></i>
-        </div>
-        <div style="font-weight:700;font-size:14px;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</div>
+    return `<div class="ultra-plan-card ${isWarning && !isPaid ? 'warning-blink' : ''}" style="margin-right:12px; min-width:200px; opacity:${isPaid ? 0.6 : 1}">
+      <div class="tx-avatar" style="width:40px; height:40px; border-radius:12px;">
+        ${cat.image ? `<img src="${cat.image}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">` : `<i data-lucide="${cat.icon}" style="width:18px;height:18px;color:${cat.color}"></i>`}
       </div>
-      <div style="font-size:16px;font-weight:900;color:var(--text-1);margin-bottom:4px">₺${f.amount.toLocaleString()}</div>
-      <div style="font-size:11px;color:${isWarning && !isPaid ? 'var(--red)' : 'var(--text-3)'};font-weight:700">
-        ${isPaid ? '<i data-lucide="check-circle" style="width:10px;height:10px"></i> ÖDENDİ' : (isToday ? 'BUGÜN' : days + ' gün')}
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:800; font-size:13px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${f.name}</div>
+        <div style="font-size:15px; font-weight:900; color:var(--text-1); margin-top:2px;">₺${f.amount.toLocaleString()}</div>
+        <div style="font-size:9px; color:${isWarning && !isPaid ? 'var(--red)' : 'var(--text-3)'}; font-weight:800; text-transform:uppercase;">
+          ${isPaid ? 'ÖDENDİ' : (isToday ? 'BUGÜN' : days + ' GÜN')}
+        </div>
       </div>
     </div>`;
   }).join('') || '<div class="empty-state">Sabit yok</div>';
