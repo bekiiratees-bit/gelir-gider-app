@@ -1,4 +1,4 @@
-// ===================== STATE =====================
+// ===================== STATE & CORE UTILS (v2.0.0) =====================
 const STORAGE_KEY = 'gelir_gider_v3_premium';
 let state = {
   theme: 'dark',
@@ -30,36 +30,36 @@ function loadState() {
   }
 }
 
-// ===================== EMERGENCY PREMIUM FIX (TOP-LEVEL) =====================
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+const today = () => new Date().toISOString().slice(0,10);
+const nowDate = () => new Date();
+const fmt = (n) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+
+// ===================== ATOMIC TRACE PAYMENT (v2.0.0) =====================
 window.handlePremiumPayment = function(e) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
-  alert("DEBUG: Butona Basıldı - İşlem Başlıyor");
+  alert("Sistem Kontrol No: 0 (Başlatıldı)");
   
   try {
     const ctx = window._payContext;
-    if (!ctx) { alert("Hata: Bağlam eksik. Lütfen pencereyi kapatıp tekrar deneyin."); return; }
-    
+    if (!ctx) { alert("Hata: Veri Bağlamı Yok"); return; }
+    alert("Sistem Kontrol No: 1 (Bağlam Tamam)");
+
     const inputEl = document.getElementById('pay-fixed-input');
-    if (!inputEl) { alert("Hata: Giriş alanı (input) bulunamadı."); return; }
-    
-    // Support dot and comma
-    const rawVal = inputEl.value.toString().replace(',', '.');
-    const amount = parseFloat(rawVal);
-    
-    if (isNaN(amount) || amount <= 0) {
-      alert("Lütfen geçerli bir tutar giriniz.");
-      return;
-    }
-    
-    const f = state.fixedExpenses.find(x => x.id.toString() == ctx.id.toString());
-    if (!f) {
-      alert("Hata: Gider kaydı bulunamadı. ID: " + ctx.id);
-      return;
-    }
-    
+    if (!inputEl) { alert("Hata: Input Elemanı Yok"); return; }
+    alert("Sistem Kontrol No: 2 (Input Tamam)");
+
+    const amount = parseFloat(inputEl.value.toString().replace(',', '.'));
+    if (isNaN(amount) || amount <= 0) { alert("Hata: Geçersiz Tutar"); return; }
+    alert("Sistem Kontrol No: 3 (Tutar: " + amount + ")");
+
+    const f = state.fixedExpenses.find(x => String(x.id) == String(ctx.id));
+    if (!f) { alert("Hata: Gider Kaydı Bulunamadı"); return; }
+    alert("Sistem Kontrol No: 4 (Kayıt Bulundu: " + f.name + ")");
+
     if (!f.payments) f.payments = {};
     f.payments[ctx.monthStr] = (f.payments[ctx.monthStr] || 0) + amount;
-    
+
     state.transactions.push({
       id: uid(),
       date: today(),
@@ -68,20 +68,23 @@ window.handlePremiumPayment = function(e) {
       note: `${f.name} - ${ctx.monthStr} Ödemesi`,
       type: 'expense'
     });
-    
+    alert("Sistem Kontrol No: 5 (State Güncellendi)");
+
     saveState();
     closeModal('modal-pay-fixed');
     renderFixed();
     renderHome();
-    showToast('Ödeme başarıyla kaydedildi.');
+    
+    alert("Sistem Kontrol No: 6 (İŞLEM BAŞARILI VE KAYDEDİLDİ)");
     delete window._payContext;
+
   } catch (err) {
-    alert("KRİTİK SİSTEM HATASI: " + err.message);
+    alert("KRİTİK HATA DETAYI: " + err.message);
   }
 }
 
 function quickPayFixed(id, monthStr, remaining) {
-  const f = state.fixedExpenses.find(x => x.id.toString() == id.toString());
+  const f = state.fixedExpenses.find(x => String(x.id) == String(id));
   if (!f) return;
   
   document.getElementById('pay-fixed-name').textContent = f.name;
@@ -99,17 +102,6 @@ function quickPayFixed(id, monthStr, remaining) {
     if (input.setSelectionRange) input.setSelectionRange(0, input.value.length);
   }, 200);
 }
-
-// ===================== UTILS =====================
-const fmt = (n) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-const fmtShort = (n) => {
-  if (Math.abs(n) >= 1000000) return (n/1000000).toFixed(1)+'M';
-  if (Math.abs(n) >= 1000) return (n/1000).toFixed(1)+'K';
-  return Math.round(n).toString();
-};
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
-const today = () => new Date().toISOString().slice(0,10);
-const nowDate = () => new Date();
 
 function getDateRange(period) {
   const now = nowDate();
