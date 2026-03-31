@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.9.2">
+<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.9.3">
 <meta name="theme-color" content="#07070f">
 <title>Gelir·Gider – Bekir ATEŞ</title>
-<link rel="stylesheet" href="styles.css?v=1.9.2">
+<link rel="stylesheet" href="styles.css?v=1.9.3">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="app_icon_512.png">
 <!-- Lucide Icons -->
@@ -213,7 +213,6 @@
     <div class="card">
       <div class="card-header"><span class="card-label">Sabit Gider Dağılımı</span></div>
       <canvas id="fixed-chart" style="height:120px"></canvas>
-      <div id="fixed-cat-legend" style="margin-top:10px"></div>
     </div>
     <div id="fixed-list"></div>
     <div class="license">License: BekirAtes</div>
@@ -682,7 +681,7 @@
     <button class="btn-ghost" onclick="closeModal('modal-cat-detail')">
       <i data-lucide="x" style="stroke-width:2"></i> Kapat
     </button>
-    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.9.2 • Bekir ATEŞ</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.9.3 • Bekir ATEŞ</div>
   </div>
 </div>
 </div>
@@ -694,7 +693,7 @@
     });
   }
 </script>
-<script src="app.js?v=1.9.2"></script>
+<script src="app.js?v=1.9.3"></script>
 <script>
 // Init Lucide icons (after DOM + app.js load)
 function initIcons() { if (window.lucide) lucide.createIcons(); }
@@ -712,7 +711,7 @@ setInterval(() => {
 }, 2500);
 
 // Auto-reload on version change
-const VER = '1.9.2';
+const VER = '1.9.3';
 if (localStorage.getItem('app_v') !== VER) {
   localStorage.setItem('app_v', VER);
   window.location.reload(true);

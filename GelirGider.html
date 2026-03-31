@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.9.2">
+<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.9.3">
 <meta name="theme-color" content="#07070f">
 <title>Gelir·Gider – Bekir ATEŞ</title>
 <style>
@@ -845,7 +845,6 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
     <div class="card">
       <div class="card-header"><span class="card-label">Sabit Gider Dağılımı</span></div>
       <canvas id="fixed-chart" style="height:120px"></canvas>
-      <div id="fixed-cat-legend" style="margin-top:10px"></div>
     </div>
     <div id="fixed-list"></div>
     <div class="license">License: BekirAtes</div>
@@ -1314,7 +1313,7 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
     <button class="btn-ghost" onclick="closeModal('modal-cat-detail')">
       <i data-lucide="x" style="stroke-width:2"></i> Kapat
     </button>
-    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.9.2 • Bekir ATEŞ</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.9.3 • Bekir ATEŞ</div>
   </div>
 </div>
 </div>
@@ -1976,7 +1975,7 @@ function renderFixed() {
 
           <!-- FOOTER -->
           <div style="display:flex; align-items:center; gap:10px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05);">
-            <button class="btn-fixed-end" onclick="event.stopPropagation(); quickPayFixed('${f.id}', '${iterStr}', ${remaining})" style="background:var(--green); color:white; border:none; flex:1; height:44px; font-size:14px;">
+            <button class="btn-fixed-end" onclick="event.stopPropagation(); quickPayFixed('${f.id}', '${iterStr}', ${Math.round(remaining*100)/100})" style="background:var(--green); color:white; border:none; flex:1; height:44px; font-size:14px; cursor:pointer; -webkit-tap-highlight-color:transparent;">
               <i data-lucide="wallet"></i> Ödeme Yap (Kısmi/Tam)
             </button>
             <button class="btn-util" onclick="event.stopPropagation(); endFixedPayment('${f.id}')" style="width:44px; height:44px; background:rgba(255,61,113,0.1); color:var(--red); border:1px solid rgba(255,61,113,0.2);">
@@ -1994,27 +1993,9 @@ function renderFixed() {
   const catMap = {};
   activeFixed.forEach(f => { catMap[f.categoryId] = (catMap[f.categoryId]||0) + f.amount; });
   const chartEl = document.getElementById('fixed-chart');
-  const legEl = document.getElementById('fixed-cat-legend');
   if (chartEl && Object.keys(catMap).length > 0) {
     drawBarChart(chartEl, Object.keys(catMap).map(id => getCatById(id).name), Object.values(catMap).map(()=>0), Object.values(catMap));
-    if (legEl) {
-      legEl.innerHTML = `
-        <div class="cat-insight-scroll">
-          ${Object.entries(catMap).map(([cid, val]) => {
-            const cat = getCatById(cid);
-            const grad = `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}bb 100%)`;
-            return `
-              <div class="cat-insight-card" style="background:${grad}" onclick="openEditCat('${cat.id}')">
-                <div class="cat-icon"><i data-lucide="${cat.icon}" style="width:18px; height:18px; color:#fff;"></i></div>
-                <div class="cat-name">${cat.name}</div>
-                <div class="cat-value">₺${fmtShort(val)}</div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      `;
-    }
-  } else if (legEl) { legEl.innerHTML = ''; }
+  }
   refreshIcons();
 }
 
@@ -2784,7 +2765,7 @@ setInterval(() => {
 }, 2500);
 
 // Auto-reload on version change
-const VER = '1.9.2';
+const VER = '1.9.3';
 if (localStorage.getItem('app_v') !== VER) {
   localStorage.setItem('app_v', VER);
   window.location.reload(true);
