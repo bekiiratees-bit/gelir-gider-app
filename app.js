@@ -725,32 +725,53 @@ function quickPayFixed(id, monthStr, remaining) {
 }
 
 function confirmFixedPayment() {
-  const ctx = window._payContext;
-  if (!ctx) return;
-  const inputEl = document.getElementById('pay-fixed-input');
-  const amount = parseFloat(inputEl.value.replace(',', '.'));
-  if (!amount || isNaN(amount) || amount <= 0) { 
-    showToast('Lütfen geçerli bir tutar giriniz'); 
-    return; 
+  try {
+    const ctx = window._payContext;
+    if (!ctx) {
+      showToast('Bağlam hatası: Lütfen pencereyi kapatıp tekrar deneyin.');
+      return;
+    }
+    const inputEl = document.getElementById('pay-fixed-input');
+    if (!inputEl) {
+      showToast('Giriş alanı bulunamadı.');
+      return;
+    }
+    const rawVal = inputEl.value.replace(',', '.');
+    const amount = parseFloat(rawVal);
+    
+    if (isNaN(amount) || amount <= 0) { 
+      showToast('Lütfen geçerli bir tutar giriniz.'); 
+      return; 
+    }
+    
+    const f = state.fixedExpenses.find(x => x.id.toString() === ctx.id.toString());
+    if (!f) {
+      showToast('Hata: İlgili sabit gider bulunamadı.');
+      return;
+    }
+    
+    if (!f.payments) f.payments = {};
+    f.payments[ctx.monthStr] = (f.payments[ctx.monthStr] || 0) + amount;
+    
+    state.transactions.push({
+      id: generateId(),
+      date: today(),
+      amount: amount,
+      categoryId: f.categoryId,
+      note: `${f.name} - ${ctx.monthStr} Ödemesi`,
+      type: 'expense'
+    });
+    
+    saveState();
+    closeModal('modal-pay-fixed');
+    renderFixed();
+    renderHome();
+    showToast('Ödeme başarıyla kaydedildi.');
+    delete window._payContext;
+  } catch (err) {
+    console.error(err);
+    showToast('Sistem hatası: ' + err.message);
   }
-  const f = state.fixedExpenses.find(x => x.id === ctx.id);
-  if (!f) return;
-  if (!f.payments) f.payments = {};
-  f.payments[ctx.monthStr] = (f.payments[ctx.monthStr] || 0) + amount;
-  state.transactions.push({
-    id: generateId(),
-    date: today(),
-    amount: amount,
-    categoryId: f.categoryId,
-    note: `${f.name} - ${ctx.monthStr} Ödemesi`,
-    type: 'expense'
-  });
-  saveState();
-  closeModal('modal-pay-fixed');
-  renderFixed();
-  renderHome();
-  showToast('Ödeme kaydedildi');
-  delete window._payContext;
 }
 
 function renderHomeFixed() {
