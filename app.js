@@ -30,6 +30,76 @@ function loadState() {
   }
 }
 
+// ===================== EMERGENCY PREMIUM FIX (TOP-LEVEL) =====================
+window.handlePremiumPayment = function(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  alert("DEBUG: Butona Basıldı - İşlem Başlıyor");
+  
+  try {
+    const ctx = window._payContext;
+    if (!ctx) { alert("Hata: Bağlam eksik. Lütfen pencereyi kapatıp tekrar deneyin."); return; }
+    
+    const inputEl = document.getElementById('pay-fixed-input');
+    if (!inputEl) { alert("Hata: Giriş alanı (input) bulunamadı."); return; }
+    
+    // Support dot and comma
+    const rawVal = inputEl.value.toString().replace(',', '.');
+    const amount = parseFloat(rawVal);
+    
+    if (isNaN(amount) || amount <= 0) {
+      alert("Lütfen geçerli bir tutar giriniz.");
+      return;
+    }
+    
+    const f = state.fixedExpenses.find(x => x.id.toString() == ctx.id.toString());
+    if (!f) {
+      alert("Hata: Gider kaydı bulunamadı. ID: " + ctx.id);
+      return;
+    }
+    
+    if (!f.payments) f.payments = {};
+    f.payments[ctx.monthStr] = (f.payments[ctx.monthStr] || 0) + amount;
+    
+    state.transactions.push({
+      id: uid(),
+      date: today(),
+      amount: amount,
+      categoryId: f.categoryId,
+      note: `${f.name} - ${ctx.monthStr} Ödemesi`,
+      type: 'expense'
+    });
+    
+    saveState();
+    closeModal('modal-pay-fixed');
+    renderFixed();
+    renderHome();
+    showToast('Ödeme başarıyla kaydedildi.');
+    delete window._payContext;
+  } catch (err) {
+    alert("KRİTİK SİSTEM HATASI: " + err.message);
+  }
+}
+
+function quickPayFixed(id, monthStr, remaining) {
+  const f = state.fixedExpenses.find(x => x.id.toString() == id.toString());
+  if (!f) return;
+  
+  document.getElementById('pay-fixed-name').textContent = f.name;
+  document.getElementById('pay-fixed-month').textContent = monthStr + ' DÖNEMİ';
+  document.getElementById('pay-fixed-remaining').textContent = 'KALAN: ₺' + remaining.toLocaleString();
+  
+  const input = document.getElementById('pay-fixed-input');
+  input.value = remaining;
+  
+  window._payContext = { id, monthStr, remaining };
+  openModal('modal-pay-fixed');
+  
+  setTimeout(() => { 
+    input.focus(); 
+    if (input.setSelectionRange) input.setSelectionRange(0, input.value.length);
+  }, 200);
+}
+
 // ===================== UTILS =====================
 const fmt = (n) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 const fmtShort = (n) => {
@@ -711,73 +781,7 @@ function rollbackLastFixedPayment() {
   showToast('Ödeme başarıyla geri alındı');
 }
 
-function quickPayFixed(id, monthStr, remaining) {
-  const f = state.fixedExpenses.find(x => x.id === id);
-  if (!f) return;
-  document.getElementById('pay-fixed-name').textContent = f.name;
-  document.getElementById('pay-fixed-month').textContent = monthStr + ' DÖNEMİ';
-  document.getElementById('pay-fixed-remaining').textContent = 'KALAN: ₺' + remaining.toLocaleString();
-  const input = document.getElementById('pay-fixed-input');
-  input.value = remaining;
-  window._payContext = { id, monthStr, remaining };
-  openModal('modal-pay-fixed');
-  setTimeout(() => { input.focus(); input.select(); }, 100);
-}
-
-window.confirmFixedPayment = function() {
-  showToast('Ödeme işlemi başlatıldı...');
-  try {
-    const ctx = window._payContext;
-    if (!ctx) { showToast('Hata: Ödeme bilgisi eksik (Context).'); return; }
-    const inputEl = document.getElementById('pay-fixed-input');
-    if (!inputEl) { showToast('Hata: Giriş alanı bulunamadı.'); return; }
-    const amount = parseFloat(inputEl.value.replace(',', '.'));
-    if (isNaN(amount) || amount <= 0) { showToast('Lütfen geçerli bir tutar giriniz.'); return; }
-    const f = state.fixedExpenses.find(x => x.id.toString() === ctx.id.toString());
-    if (!f) { showToast('Hata: Ödeme kaydı bulunamadı.'); return; }
-    if (!f.payments) f.payments = {};
-    f.payments[ctx.monthStr] = (f.payments[ctx.monthStr] || 0) + amount;
-    state.transactions.push({
-      id: generateId(),
-      date: today(),
-      amount: amount,
-      categoryId: f.categoryId,
-      note: `${f.name} - ${ctx.monthStr} Ödemesi`,
-      type: 'expense'
-    });
-    saveState();
-    closeModal('modal-pay-fixed');
-    renderFixed();
-    renderHome();
-    showToast('Ödeme başarıyla kaydedildi.');
-    delete window._payContext;
-  } catch (err) {
-    showToast('Sistem Hatası: ' + err.message);
-  }
-}
-function confirmFixedPayment() { window.confirmFixedPayment(); }
-
-// Failsafe Button Binding
-window.addEventListener('load', () => {
-  const btn = document.getElementById('btn-pay-confirm');
-  if (btn) {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      window.confirmFixedPayment();
-    });
-  }
-});
-// Re-bind on screen changes
-const _showScreen = showScreen;
-showScreen = function(name) {
-  _showScreen(name);
-  const btn = document.getElementById('btn-pay-confirm');
-  if (btn) {
-    btn.replaceWith(btn.cloneNode(true)); // Clear old listeners
-    document.getElementById('btn-pay-confirm').addEventListener('click', () => window.confirmFixedPayment());
-  }
-}
+function confirmFixedPayment() { window.handlePremiumPayment(); }
 
 function renderHomeFixed() {
   const el = document.getElementById('home-fixed-list');
