@@ -1340,6 +1340,7 @@ function saveBudget() {
 
 // ===================== GENERAL UTILS =====================
 function setFilter(id) { state.filterCat = id; renderTransactions(); }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function toggleTheme() {
   state.theme = state.theme === 'dark' ? 'light' : 'dark';
