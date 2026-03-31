@@ -721,13 +721,18 @@ function quickPayFixed(id, monthStr, remaining) {
   input.value = remaining;
   window._payContext = { id, monthStr, remaining };
   openModal('modal-pay-fixed');
+  setTimeout(() => { input.focus(); input.select(); }, 100);
 }
 
 function confirmFixedPayment() {
   const ctx = window._payContext;
   if (!ctx) return;
-  const amount = parseFloat(document.getElementById('pay-fixed-input').value);
-  if (!amount || isNaN(amount) || amount <= 0) { showToast('Lütfen geçerli bir tutar giriniz'); return; }
+  const inputEl = document.getElementById('pay-fixed-input');
+  const amount = parseFloat(inputEl.value.replace(',', '.'));
+  if (!amount || isNaN(amount) || amount <= 0) { 
+    showToast('Lütfen geçerli bir tutar giriniz'); 
+    return; 
+  }
   const f = state.fixedExpenses.find(x => x.id === ctx.id);
   if (!f) return;
   if (!f.payments) f.payments = {};

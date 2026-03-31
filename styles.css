@@ -432,11 +432,13 @@ html, body {
 
 /* ============ MODALS ============ */
 .modal-overlay {
-  position:fixed; inset:0; background:rgba(0,0,0,0.6);
-  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-  z-index:500; display:flex; align-items:flex-end; justify-content:center;
+  position:fixed; inset:0; background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  z-index:500; display:flex; align-items:center; justify-content:center;
   opacity:0; pointer-events:none; transition:opacity 0.4s;
+  padding:20px;
 }
+[data-theme="light"] .modal-overlay { background:rgba(255,255,255,0.7); }
 .modal-overlay.open { opacity:1; pointer-events:all; }
 .modal-sheet {
   width:100%; max-width:430px; background:var(--bg-elevated);
