@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v2.0.0">
+<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v2.0.1">
 <meta name="theme-color" content="#07070f">
 <title>Gelir·Gider – Bekir ATEŞ</title>
 <style>
@@ -1315,14 +1315,14 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
     <button class="btn-ghost" onclick="closeModal('modal-cat-detail')">
       <i data-lucide="x" style="stroke-width:2"></i> Kapat
     </button>
-    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v2.0.0 • Bekir ATEŞ</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v2.0.1 • Bekir ATEŞ</div>
   </div>
 </div>
 </div>
 
 
 <script>
-// ===================== STATE & CORE UTILS (v2.0.0) =====================
+// ===================== CORE UTILS & STATE (v2.0.2) =====================
 const STORAGE_KEY = 'gelir_gider_v3_premium';
 let state = {
   theme: 'dark',
@@ -1345,6 +1345,16 @@ let state = {
   monthlyBudget: 0
 };
 
+function showToast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i data-lucide="${type==='success'?'check-circle':'alert-circle'}" style="width:16px;height:16px"></i> ${msg}`;
+  document.body.appendChild(t);
+  if (window.lucide) lucide.createIcons();
+  setTimeout(() => t.classList.add('show'), 50);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 500); }, 3000);
+}
+
 function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -1359,27 +1369,22 @@ const today = () => new Date().toISOString().slice(0,10);
 const nowDate = () => new Date();
 const fmt = (n) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
-// ===================== ATOMIC TRACE PAYMENT (v2.0.0) =====================
+// ===================== PREMIUM PAYMENT LOGIC (v2.0.2) =====================
 window.handlePremiumPayment = function(e) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
-  alert("Sistem Kontrol No: 0 (Başlatıldı)");
   
   try {
     const ctx = window._payContext;
-    if (!ctx) { alert("Hata: Veri Bağlamı Yok"); return; }
-    alert("Sistem Kontrol No: 1 (Bağlam Tamam)");
+    if (!ctx) return;
 
     const inputEl = document.getElementById('pay-fixed-input');
-    if (!inputEl) { alert("Hata: Input Elemanı Yok"); return; }
-    alert("Sistem Kontrol No: 2 (Input Tamam)");
+    if (!inputEl) return;
 
     const amount = parseFloat(inputEl.value.toString().replace(',', '.'));
-    if (isNaN(amount) || amount <= 0) { alert("Hata: Geçersiz Tutar"); return; }
-    alert("Sistem Kontrol No: 3 (Tutar: " + amount + ")");
+    if (isNaN(amount) || amount <= 0) { showToast('Lütfen geçerli bir tutar giriniz.', 'error'); return; }
 
     const f = state.fixedExpenses.find(x => String(x.id) == String(ctx.id));
-    if (!f) { alert("Hata: Gider Kaydı Bulunamadı"); return; }
-    alert("Sistem Kontrol No: 4 (Kayıt Bulundu: " + f.name + ")");
+    if (!f) return;
 
     if (!f.payments) f.payments = {};
     f.payments[ctx.monthStr] = (f.payments[ctx.monthStr] || 0) + amount;
@@ -1390,20 +1395,21 @@ window.handlePremiumPayment = function(e) {
       amount: amount,
       categoryId: f.categoryId,
       note: `${f.name} - ${ctx.monthStr} Ödemesi`,
-      type: 'expense'
+      type: 'expense',
+      createdAt: new Date().toISOString()
     });
-    alert("Sistem Kontrol No: 5 (State Güncellendi)");
 
     saveState();
     closeModal('modal-pay-fixed');
     renderFixed();
     renderHome();
     
-    alert("Sistem Kontrol No: 6 (İŞLEM BAŞARILI VE KAYDEDİLDİ)");
+    showToast('Ödeme başarıyla kaydedildi.');
     delete window._payContext;
 
   } catch (err) {
-    alert("KRİTİK HATA DETAYI: " + err.message);
+    console.error(err);
+    alert("Sistem Hatası: " + err.message);
   }
 }
 
@@ -1422,9 +1428,11 @@ function quickPayFixed(id, monthStr, remaining) {
   openModal('modal-pay-fixed');
   
   setTimeout(() => { 
-    input.focus(); 
-    if (input.setSelectionRange) input.setSelectionRange(0, input.value.length);
-  }, 200);
+    if (input) {
+      input.focus(); 
+      if (input.setSelectionRange) input.setSelectionRange(0, input.value.length);
+    }
+  }, 250);
 }
 
 function getDateRange(period) {
@@ -2795,7 +2803,7 @@ setInterval(() => {
 }, 2500);
 
 // Auto-reload on version change
-const VER = '2.0.0';
+const VER = '2.0.1';
 if (localStorage.getItem('app_v') !== VER) {
   localStorage.setItem('app_v', VER);
   window.location.reload(true);
