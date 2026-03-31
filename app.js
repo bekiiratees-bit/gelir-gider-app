@@ -725,37 +725,18 @@ function quickPayFixed(id, monthStr, remaining) {
 }
 
 window.confirmFixedPayment = function() {
-  // Test if button click is captured
-  showToast('İşlem başlatıldı...');
-  
+  showToast('Ödeme işlemi başlatıldı...');
   try {
     const ctx = window._payContext;
-    if (!ctx) {
-      showToast('Bağlam hatası: Lütfen pencereyi kapatıp tekrar deneyin.');
-      return;
-    }
+    if (!ctx) { showToast('Hata: Ödeme bilgisi eksik (Context).'); return; }
     const inputEl = document.getElementById('pay-fixed-input');
-    if (!inputEl) {
-      showToast('Giriş alanı bulunamadı.');
-      return;
-    }
-    const rawVal = inputEl.value.replace(',', '.');
-    const amount = parseFloat(rawVal);
-    
-    if (isNaN(amount) || amount <= 0) { 
-      showToast('Lütfen geçerli bir tutar giriniz.'); 
-      return; 
-    }
-    
+    if (!inputEl) { showToast('Hata: Giriş alanı bulunamadı.'); return; }
+    const amount = parseFloat(inputEl.value.replace(',', '.'));
+    if (isNaN(amount) || amount <= 0) { showToast('Lütfen geçerli bir tutar giriniz.'); return; }
     const f = state.fixedExpenses.find(x => x.id.toString() === ctx.id.toString());
-    if (!f) {
-      showToast('Hata: İlgili sabit gider bulunamadı.');
-      return;
-    }
-    
+    if (!f) { showToast('Hata: Ödeme kaydı bulunamadı.'); return; }
     if (!f.payments) f.payments = {};
     f.payments[ctx.monthStr] = (f.payments[ctx.monthStr] || 0) + amount;
-    
     state.transactions.push({
       id: generateId(),
       date: today(),
@@ -764,7 +745,6 @@ window.confirmFixedPayment = function() {
       note: `${f.name} - ${ctx.monthStr} Ödemesi`,
       type: 'expense'
     });
-    
     saveState();
     closeModal('modal-pay-fixed');
     renderFixed();
@@ -772,11 +752,32 @@ window.confirmFixedPayment = function() {
     showToast('Ödeme başarıyla kaydedildi.');
     delete window._payContext;
   } catch (err) {
-    console.error(err);
-    showToast('Sistem hatası: ' + err.message);
+    showToast('Sistem Hatası: ' + err.message);
   }
 }
 function confirmFixedPayment() { window.confirmFixedPayment(); }
+
+// Failsafe Button Binding
+window.addEventListener('load', () => {
+  const btn = document.getElementById('btn-pay-confirm');
+  if (btn) {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      window.confirmFixedPayment();
+    });
+  }
+});
+// Re-bind on screen changes
+const _showScreen = showScreen;
+showScreen = function(name) {
+  _showScreen(name);
+  const btn = document.getElementById('btn-pay-confirm');
+  if (btn) {
+    btn.replaceWith(btn.cloneNode(true)); // Clear old listeners
+    document.getElementById('btn-pay-confirm').addEventListener('click', () => window.confirmFixedPayment());
+  }
+}
 
 function renderHomeFixed() {
   const el = document.getElementById('home-fixed-list');

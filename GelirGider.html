@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.9.7">
+<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.9.8">
 <meta name="theme-color" content="#07070f">
 <title>Gelir·Gider – Bekir ATEŞ</title>
 <style>
@@ -1298,7 +1298,7 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
       <input type="number" id="pay-fixed-input" placeholder="0.00" step="0.01" onkeydown="if(event.key==='Enter')confirmFixedPayment()" style="padding-left:40px; font-size:32px; font-weight:900; height:70px; background:rgba(255,255,255,0.02); color:white; border-radius:16px; border:1px solid rgba(255,255,255,0.1); width:100%; box-sizing:border-box;">
     </div>
 
-    <button class="btn btn-primary" id="btn-pay-confirm" onclick="window.confirmFixedPayment()" style="background:var(--green); height:56px; font-size:16px; width:100%; border:none; border-radius:16px; color:white; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
+    <button class="btn btn-primary" id="btn-pay-confirm" style="background:var(--green); height:56px; font-size:16px; width:100%; border:none; border-radius:16px; color:white; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
       <i data-lucide="shield-check"></i> Ödemeyi Tamamla
     </button>
     <button class="btn-ghost" onclick="closeModal('modal-pay-fixed')" style="width:100%; margin-top:12px;">
@@ -1315,7 +1315,7 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
     <button class="btn-ghost" onclick="closeModal('modal-cat-detail')">
       <i data-lucide="x" style="stroke-width:2"></i> Kapat
     </button>
-    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.9.7 • Bekir ATEŞ</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.9.8 • Bekir ATEŞ</div>
   </div>
 </div>
 </div>
@@ -2049,37 +2049,18 @@ function quickPayFixed(id, monthStr, remaining) {
 }
 
 window.confirmFixedPayment = function() {
-  // Test if button click is captured
-  showToast('İşlem başlatıldı...');
-  
+  showToast('Ödeme işlemi başlatıldı...');
   try {
     const ctx = window._payContext;
-    if (!ctx) {
-      showToast('Bağlam hatası: Lütfen pencereyi kapatıp tekrar deneyin.');
-      return;
-    }
+    if (!ctx) { showToast('Hata: Ödeme bilgisi eksik (Context).'); return; }
     const inputEl = document.getElementById('pay-fixed-input');
-    if (!inputEl) {
-      showToast('Giriş alanı bulunamadı.');
-      return;
-    }
-    const rawVal = inputEl.value.replace(',', '.');
-    const amount = parseFloat(rawVal);
-    
-    if (isNaN(amount) || amount <= 0) { 
-      showToast('Lütfen geçerli bir tutar giriniz.'); 
-      return; 
-    }
-    
+    if (!inputEl) { showToast('Hata: Giriş alanı bulunamadı.'); return; }
+    const amount = parseFloat(inputEl.value.replace(',', '.'));
+    if (isNaN(amount) || amount <= 0) { showToast('Lütfen geçerli bir tutar giriniz.'); return; }
     const f = state.fixedExpenses.find(x => x.id.toString() === ctx.id.toString());
-    if (!f) {
-      showToast('Hata: İlgili sabit gider bulunamadı.');
-      return;
-    }
-    
+    if (!f) { showToast('Hata: Ödeme kaydı bulunamadı.'); return; }
     if (!f.payments) f.payments = {};
     f.payments[ctx.monthStr] = (f.payments[ctx.monthStr] || 0) + amount;
-    
     state.transactions.push({
       id: generateId(),
       date: today(),
@@ -2088,7 +2069,6 @@ window.confirmFixedPayment = function() {
       note: `${f.name} - ${ctx.monthStr} Ödemesi`,
       type: 'expense'
     });
-    
     saveState();
     closeModal('modal-pay-fixed');
     renderFixed();
@@ -2096,11 +2076,32 @@ window.confirmFixedPayment = function() {
     showToast('Ödeme başarıyla kaydedildi.');
     delete window._payContext;
   } catch (err) {
-    console.error(err);
-    showToast('Sistem hatası: ' + err.message);
+    showToast('Sistem Hatası: ' + err.message);
   }
 }
 function confirmFixedPayment() { window.confirmFixedPayment(); }
+
+// Failsafe Button Binding
+window.addEventListener('load', () => {
+  const btn = document.getElementById('btn-pay-confirm');
+  if (btn) {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      window.confirmFixedPayment();
+    });
+  }
+});
+// Re-bind on screen changes
+const _showScreen = showScreen;
+showScreen = function(name) {
+  _showScreen(name);
+  const btn = document.getElementById('btn-pay-confirm');
+  if (btn) {
+    btn.replaceWith(btn.cloneNode(true)); // Clear old listeners
+    document.getElementById('btn-pay-confirm').addEventListener('click', () => window.confirmFixedPayment());
+  }
+}
 
 function renderHomeFixed() {
   const el = document.getElementById('home-fixed-list');
@@ -2798,7 +2799,7 @@ setInterval(() => {
 }, 2500);
 
 // Auto-reload on version change
-const VER = '1.9.7';
+const VER = '1.9.8';
 if (localStorage.getItem('app_v') !== VER) {
   localStorage.setItem('app_v', VER);
   window.location.reload(true);
