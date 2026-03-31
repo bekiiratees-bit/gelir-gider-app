@@ -1,4 +1,4 @@
-// ===================== CORE UTILS & STATE (v2.0.2) =====================
+// ===================== CORE UTILS & STATE (v2.0.3) =====================
 const STORAGE_KEY = 'gelir_gider_v3_premium';
 let state = {
   theme: 'dark',
@@ -44,8 +44,13 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 const today = () => new Date().toISOString().slice(0,10);
 const nowDate = () => new Date();
 const fmt = (n) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+const fmtShort = (n) => {
+  if (Math.abs(n) >= 1000000) return (n/1000000).toFixed(1)+'M';
+  if (Math.abs(n) >= 1000) return (n/1000).toFixed(1)+'K';
+  return Math.round(n).toString();
+};
 
-// ===================== PREMIUM PAYMENT LOGIC (v2.0.2) =====================
+// ===================== PREMIUM PAYMENT LOGIC (v2.0.3) =====================
 window.handlePremiumPayment = function(e) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
   
@@ -85,7 +90,6 @@ window.handlePremiumPayment = function(e) {
 
   } catch (err) {
     console.error(err);
-    alert("Sistem Hatası: " + err.message);
   }
 }
 
