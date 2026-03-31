@@ -724,7 +724,10 @@ function quickPayFixed(id, monthStr, remaining) {
   setTimeout(() => { input.focus(); input.select(); }, 100);
 }
 
-function confirmFixedPayment() {
+window.confirmFixedPayment = function() {
+  // Test if button click is captured
+  showToast('İşlem başlatıldı...');
+  
   try {
     const ctx = window._payContext;
     if (!ctx) {
@@ -773,6 +776,7 @@ function confirmFixedPayment() {
     showToast('Sistem hatası: ' + err.message);
   }
 }
+function confirmFixedPayment() { window.confirmFixedPayment(); }
 
 function renderHomeFixed() {
   const el = document.getElementById('home-fixed-list');

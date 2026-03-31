@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.9.6">
+<meta name="apple-mobile-web-app-title" content="Gelir·Gider – v1.9.7">
 <meta name="theme-color" content="#07070f">
 <title>Gelir·Gider – Bekir ATEŞ</title>
 <style>
@@ -1298,7 +1298,7 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
       <input type="number" id="pay-fixed-input" placeholder="0.00" step="0.01" onkeydown="if(event.key==='Enter')confirmFixedPayment()" style="padding-left:40px; font-size:32px; font-weight:900; height:70px; background:rgba(255,255,255,0.02); color:white; border-radius:16px; border:1px solid rgba(255,255,255,0.1); width:100%; box-sizing:border-box;">
     </div>
 
-    <button class="btn btn-primary" id="btn-pay-confirm" onclick="confirmFixedPayment()" style="background:var(--green); height:56px; font-size:16px; width:100%; border:none; border-radius:16px; color:white; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
+    <button class="btn btn-primary" id="btn-pay-confirm" onclick="window.confirmFixedPayment()" style="background:var(--green); height:56px; font-size:16px; width:100%; border:none; border-radius:16px; color:white; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;">
       <i data-lucide="shield-check"></i> Ödemeyi Tamamla
     </button>
     <button class="btn-ghost" onclick="closeModal('modal-pay-fixed')" style="width:100%; margin-top:12px;">
@@ -1315,7 +1315,7 @@ lucide.createIcons({icons});\``);if(typeof c>"u")throw new Error("`createIcons()
     <button class="btn-ghost" onclick="closeModal('modal-cat-detail')">
       <i data-lucide="x" style="stroke-width:2"></i> Kapat
     </button>
-    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.9.6 • Bekir ATEŞ</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.15);text-align:center;margin-top:24px;padding-bottom:100px;font-weight:700">v1.9.7 • Bekir ATEŞ</div>
   </div>
 </div>
 </div>
@@ -2048,7 +2048,10 @@ function quickPayFixed(id, monthStr, remaining) {
   setTimeout(() => { input.focus(); input.select(); }, 100);
 }
 
-function confirmFixedPayment() {
+window.confirmFixedPayment = function() {
+  // Test if button click is captured
+  showToast('İşlem başlatıldı...');
+  
   try {
     const ctx = window._payContext;
     if (!ctx) {
@@ -2097,6 +2100,7 @@ function confirmFixedPayment() {
     showToast('Sistem hatası: ' + err.message);
   }
 }
+function confirmFixedPayment() { window.confirmFixedPayment(); }
 
 function renderHomeFixed() {
   const el = document.getElementById('home-fixed-list');
@@ -2794,7 +2798,7 @@ setInterval(() => {
 }, 2500);
 
 // Auto-reload on version change
-const VER = '1.9.6';
+const VER = '1.9.7';
 if (localStorage.getItem('app_v') !== VER) {
   localStorage.setItem('app_v', VER);
   window.location.reload(true);
